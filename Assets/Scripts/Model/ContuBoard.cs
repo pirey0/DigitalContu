@@ -9,6 +9,9 @@ public class ContuBoard
     private TileType[,] tiles;
     private Token[] tokens;
 
+    public int Width { get => width; }
+    public int Height { get => height; }
+
     public static ContuBoard CreateDefault()
     {
         ContuBoard board = new ContuBoard();
