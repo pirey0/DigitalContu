@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+[DefaultExecutionOrder(200)]
 public class VisualBoard : MonoBehaviour
 {
     [SerializeField] GameObject tilePrefab, tokenPrefab;
@@ -8,11 +9,12 @@ public class VisualBoard : MonoBehaviour
     ContuGame game;
 
     VisualTile[,] visualTiles;
-    VisualToken visualTokens;
+    VisualToken[] visualTokens;
 
     private void Start()
     {
         game = gameHolder.GetComponent<IContuGameOwner>().GetGame();
+        SpawnBoard();
     }
 
     private void SpawnBoard()
@@ -23,9 +25,11 @@ public class VisualBoard : MonoBehaviour
         {
             for (int x = 0; x < visualTiles.GetLength(0); x++)
             {
-                visualTiles[x, y] = Instantiate(tilePrefab, new Vector3(x * 30, 0, y * 30), Quaternion.identity).GetComponent<VisualTile>();
+                visualTiles[x, y] = Instantiate(tilePrefab, new Vector3(x +0.5f, y + 0.5f, 0), Quaternion.identity).GetComponent<VisualTile>();
+                visualTiles[x, y].SwitchTo(game.Board.GetTile(x, y));
             }
         }
     }
+
 
 }
