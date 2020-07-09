@@ -38,7 +38,7 @@ public static class TokenEffects
         if(DoesNotBelongToPlayer(board, parameters[1], parameters[2], userId, oppositeCheck: true))
             return false;   
         
-        if(!board.CanPlaceTile(parameters[3], parameters[4], userId))
+        if(!board.CanPlaceTile(parameters[3], parameters[4], userId) && (parameters[3] != parameters[1] || parameters[4] != parameters[2]))
             return false;
 
         return true;
@@ -61,6 +61,9 @@ public static class TokenEffects
             return false;
 
         if (!board.CanPlaceTile(parameters[1], parameters[2], userId))
+            return false;
+
+        if (DirectionBetween2Tiles(parameters[1], parameters[2], parameters[3], parameters[4]) == Direction.Error)
             return false;
 
         return true;
