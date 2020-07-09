@@ -27,7 +27,7 @@ public class Token
         this.exhaustDuration = exhaustDuration;
     }
 
-    public void Tick()
+    public bool Tick()
     {
         if(exhaustCount > 0)
         {
@@ -35,9 +35,11 @@ public class Token
 
             if(exhaustCount == 0)
             {
-                TryChangeState(TokenState.Free);
+                return TryChangeState(TokenState.Free);
             }
         }
+
+        return false;
     }
 
     public bool TryChangeState(TokenState newState)

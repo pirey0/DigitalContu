@@ -8,6 +8,7 @@ public interface IContuGameOwner
 public class ModelTester : MonoBehaviour, IContuGameOwner
 {
     ContuGame game;
+    [SerializeField] bool draw;
 
     private void Awake()
     {
@@ -35,7 +36,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
 
     private ExecutionCheckResult RandomAction(bool log)
     {
-        return game.TryAction(Random.Range(0, 10), (ActionType)Random.Range(0, 6), log: log, userCaused: true, GetRandomParams());
+        return game.TryAction(Random.Range(0, 10), (ActionType)Random.Range(0, 6), log: log, networkCalled: false, GetRandomParams());
     }
 
     private int[] GetRandomParams()
@@ -52,6 +53,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
 
     private void OnGUI()
     {
+        if(draw)
         GUI.Label(new Rect(200, 200, 300, 300), game.ToString());
     }
 

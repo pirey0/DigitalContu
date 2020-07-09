@@ -14,6 +14,8 @@ public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
 
     LoadBalancingClient client;
     ContuGame game;
+
+    public int LocalPlayerId { get => client.LocalPlayer.ActorNumber - 1; }
     private void Start()
     {
         client = connectionHandler.Client;
@@ -23,9 +25,8 @@ public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
         game = gameHolder.GetComponent<IContuGameOwner>().GetGame();
         if(game != null)
         {
-            game.ActionExecuted += OnActionExecuted;
+            game.NetworkActionCall += OnActionExecuted;
         }
-
     }
 
     private void OnActionExecuted(ContuActionData data)
@@ -59,7 +60,7 @@ public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
             case (byte)ContuEventCode.GameAction:
                 var data = ContuActionData.FromByteArray((byte[])photonEvent.CustomData);
                 //Debug.Log("Contu Game Action received: " + data);
-                game.TryAction(data, true, false);
+                game.TryAction(data, true, networkCalled: true);
                 break;
         }
 

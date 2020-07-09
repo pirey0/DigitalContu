@@ -52,7 +52,7 @@ public class DebugView : MonoBehaviour
         }
 
 
-        var res = game.TryAction(contuConnection.Client.LocalPlayer.ActorNumber-1, (ActionType)int.Parse(input[0]), true, true, GetParams(input));
+        var res = game.TryAction(contuConnection.Client.LocalPlayer.ActorNumber-1, (ActionType)int.Parse(input[0]), true, false, GetParams(input));
         Debug.Log("Command: " + res);
     }
 

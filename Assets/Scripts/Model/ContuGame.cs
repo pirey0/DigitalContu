@@ -11,6 +11,7 @@ public class ContuGame
     public event System.Action<BoardState> BoardStateChanged;
     public event System.Action TurnChanged;
     public event System.Action<ContuActionData> ActionExecuted;
+    public event System.Action<ContuActionData> NetworkActionCall;
 
 
     public ContuBoard Board { get => board; }
@@ -27,12 +28,12 @@ public class ContuGame
         return game;
     }
 
-    public ExecutionCheckResult TryAction(ContuActionData data, bool log, bool userCaused)
+    public ExecutionCheckResult TryAction(ContuActionData data, bool log, bool networkCalled)
     {
-        return TryAction(data.UserId, data.Action, log, userCaused, data.Parameters);
+        return TryAction(data.UserId, data.Action, log, networkCalled, data.Parameters);
     }
 
-    public ExecutionCheckResult TryAction(int userId, ActionType actionType, bool log, bool userCaused, params int[] parameters)
+    public ExecutionCheckResult TryAction(int userId, ActionType actionType, bool log, bool networkCalled, params int[] parameters)
     {
         var validResult = ActionIsValid(userId, actionType, parameters);
 
@@ -64,8 +65,10 @@ public class ContuGame
         if (log)
             Debug.Log("Action: " + userId + ") " + actionType.ToString());
 
-        if(userCaused)
-            ActionExecuted?.Invoke(new ContuActionData(userId, actionType, parameters));
+        if(!networkCalled)
+            NetworkActionCall?.Invoke(new ContuActionData(userId, actionType, parameters));
+
+        ActionExecuted?.Invoke(new ContuActionData(userId, actionType, parameters));
 
         PassTurn();
         return ExecutionCheckResult.Success;

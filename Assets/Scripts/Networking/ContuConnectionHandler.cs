@@ -12,6 +12,8 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
 
     private LoadBalancingClient client;
 
+    public event System.Action RoomJoined;
+
     public LoadBalancingClient Client { get => client; } 
 
     public void Start()
@@ -98,13 +100,8 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
 
     public void OnJoinedRoom()
     {
-        Debug.Log("Room Joined, Players:");
-
-        foreach (var item in client.CurrentRoom.Players)
-        {
-            Debug.Log(item.Key + ": " + item.Value.NickName);
-        }
-
+        Debug.Log("Room Joined");
+        RoomJoined?.Invoke();
     }
 
     public void OnJoinRoomFailed(short returnCode, string message)

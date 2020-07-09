@@ -9,8 +9,12 @@ public class ContuBoard
     private TileType[,] tiles;
     private Token[] tokens;
 
+    public event System.Action<int, int, TileType> TileChanged;
+    public event System.Action TokensUpdated;
+
     public int Width { get => width; }
     public int Height { get => height; }
+    public int TokenCount { get => tokens.Length; }
 
     public static ContuBoard CreateDefault()
     {
@@ -51,6 +55,7 @@ public class ContuBoard
             return;
 
         tiles[x, y] = type;
+        TileChanged?.Invoke(x, y, type);
     }
 
     public bool CanPlaceTile(int x, int y, int playerId)
@@ -128,10 +133,15 @@ public class ContuBoard
 
     public void TickTokens()
     {
+        bool changed = false;
         foreach (var t in tokens)
         {
-            t.Tick();
+            if (t.Tick())
+                changed = true;
         }
+
+        if (changed)
+            TokensUpdated?.Invoke();
     }
 
     public bool CheckRuleOf5()
