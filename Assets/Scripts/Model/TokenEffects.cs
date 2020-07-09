@@ -77,7 +77,7 @@ public static class TokenEffects
         if (DirectionBetween2Tiles(parameters[1], parameters[2], parameters[3], parameters[4]) == Direction.Error)
             return false;
 
-        return false;
+        return true;
     }
 
     private static bool DoesNotBelongToPlayer(ContuBoard board, int x, int y, int userId, bool oppositeCheck = false)
@@ -93,7 +93,7 @@ public static class TokenEffects
         {
             case TokenType.Guard: //remove enemy in your half, place one of yours in your half
                 board.SetTile(parameters[1], parameters[2], TileType.Empty);
-                board.SetTile(parameters[3], parameters[3], UserIdToTileType(userId));
+                board.SetTile(parameters[3], parameters[4], UserIdToTileType(userId));
                 break;
 
             case TokenType.Archer: // 3 in a line are deleted that are attached to you

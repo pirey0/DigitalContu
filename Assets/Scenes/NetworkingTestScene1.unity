@@ -775,6 +775,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   connectionHandler: {fileID: 1003034951}
+  debugView: {fileID: 2114748490}
   gameHolder: {fileID: 350829402}
   sendSuccesfulActions: 1
   log: 0
@@ -925,7 +926,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: State
+  m_Text: Playing
 --- !u!222 &1659396218
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1418,8 +1419,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   owner: {fileID: 350829402}
-  contuConnection: {fileID: 1003034951}
+  network: {fileID: 1003034953}
   logText: {fileID: 12787528}
+  chatMode: 1
 --- !u!1001 &4116014440468952154
 PrefabInstance:
   m_ObjectHideFlags: 0

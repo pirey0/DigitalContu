@@ -7,6 +7,7 @@ using UnityEngine;
 public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] ContuConnectionHandler connectionHandler;
+    [SerializeField] DebugView debugView;
     [SerializeField] Transform gameHolder;
 
     [SerializeField] bool sendSuccesfulActions;
@@ -61,6 +62,11 @@ public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
                 var data = ContuActionData.FromByteArray((byte[])photonEvent.CustomData);
                 //Debug.Log("Contu Game Action received: " + data);
                 game.TryAction(data, true, networkCalled: true);
+                break;
+
+            case (byte)ContuEventCode.Chat:
+                if(debugView!= null)
+                    debugView.Print(photonEvent.Sender + ": " + (string)photonEvent.CustomData);
                 break;
         }
 

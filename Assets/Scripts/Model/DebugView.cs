@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class DebugView : MonoBehaviour
 {
     [SerializeField] Transform owner;
-    [SerializeField] ContuConnectionHandler contuConnection;
+    [SerializeField] ContuNetworkEventHandler network;
     [SerializeField] Text logText;
+    [SerializeField] bool chatMode;
 
     ContuGame game;
 
@@ -22,8 +24,6 @@ public class DebugView : MonoBehaviour
         else
         {
             Application.logMessageReceived += OnLog;
-
-
         }
     }
 
@@ -32,9 +32,14 @@ public class DebugView : MonoBehaviour
         if (logText == null)
             return;
 
-        logText.text += type.ToString() + ": " + condition + Environment.NewLine;
+        Print(type.ToString() + ": " + condition);
+    }
 
-        if(logText.text.Length > 300)
+    public void Print(string msg)
+    {
+        logText.text += msg + Environment.NewLine;
+
+        if (logText.text.Length > 300)
         {
             logText.text = logText.text.Substring(logText.text.Length - 300);
         }
@@ -42,18 +47,25 @@ public class DebugView : MonoBehaviour
 
     public void OnCommandSent(string content)
     {
-
-        var input = content.Split(' ');
-
-        if(input.Length < 2)
+        if (chatMode)
         {
-            Debug.Log("Command: not enough paramenters");
-            return;
+            Print("Me: " + content);
+            network.RaiseEvent((byte)ContuEventCode.Chat, content);
+        }
+        else
+        {
+            var input = content.Split(' ');
+
+            if (input.Length < 2)
+            {
+                Debug.Log("Command: not enough paramenters");
+                return;
+            }
+
+            var res = game.TryAction(network.LocalPlayerId, (ActionType)int.Parse(input[0]), true, false, GetParams(input));
+            Debug.Log("Command: " + res);
         }
 
-
-        var res = game.TryAction(contuConnection.Client.LocalPlayer.ActorNumber-1, (ActionType)int.Parse(input[0]), true, false, GetParams(input));
-        Debug.Log("Command: " + res);
     }
 
     private int[] GetParams(string[] input)

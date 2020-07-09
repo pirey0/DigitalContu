@@ -35,12 +35,18 @@ public class VisualBoard : MonoBehaviour
 
         game.TurnChanged += OnTurnChanged;
         game.ActionExecuted += OnActionExecuted;
+        game.BoardStateChanged += OnGameStateChanged;
         game.Board.TileChanged += OnTileChanged;
         game.Board.TokensUpdated += OnTokenSelfUpdate;
 
         SpawnBoard();
         SpawnTokens();
         UpdateTokenView();
+    }
+
+    private void OnGameStateChanged(BoardState obj)
+    {
+        stateText.text = "State: " + game.Board.GetBoardState();
     }
 
     private void OnRoomJoined()
@@ -74,7 +80,6 @@ public class VisualBoard : MonoBehaviour
         interactionState = InteractionState.Selecting;
         interactionStateText.text = interactionState.ToString();
         turnText.text = "Turn: " + game.Turn + " " + game.TurnState;
-        stateText.text = "State: " + game.Board.GetBoardState();
     }
 
     private void Update()
