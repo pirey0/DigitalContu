@@ -4,15 +4,14 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class DebugView : MonoBehaviour
+public class ChatSystem : MonoBehaviour
 {
     [SerializeField] Transform owner;
     [SerializeField] ContuNetworkEventHandler network;
     [SerializeField] Text logText;
-    [SerializeField] bool chatMode;
+    [SerializeField] AudioClip[] clips;
 
     ContuGame game;
-
     private void Start()
     {
         game = owner.GetComponent<IContuGameOwner>().GetGame();
@@ -45,15 +44,20 @@ public class DebugView : MonoBehaviour
         }
     }
 
+    public bool PlaySound(int index)
+    {
+        if (index < 0 || index >= clips.Length)
+            return false;
+
+        AudioSource.PlayClipAtPoint(clips[index], Vector3.zero);
+        return true;
+    }
+
     public void OnCommandSent(string content)
     {
-        if (chatMode)
+        if(content.StartsWith("/do "))
         {
-            Print("Me: " + content);
-            network.RaiseEvent((byte)ContuEventCode.Chat, content);
-        }
-        else
-        {
+            content = content.Substring(4);
             var input = content.Split(' ');
 
             if (input.Length < 2)
@@ -64,6 +68,26 @@ public class DebugView : MonoBehaviour
 
             var res = game.TryAction(network.LocalPlayerId, (ActionType)int.Parse(input[0]), true, false, GetParams(input));
             Debug.Log("Command: " + res);
+        }
+        else if( content.StartsWith("/say "))
+        {
+            content = content.Substring(5);
+            int res;
+
+            if(int.TryParse(content, out res))
+            {
+
+                if(PlaySound(res))
+                {
+                    network.RaiseEvent((int)ContuEventCode.ChatSoundMessage, res);
+                    Print("Said: " + res);
+                }
+            }
+        }
+        else
+        {
+            Print("Me: " + content);
+            network.RaiseEvent((byte)ContuEventCode.Chat, content);
         }
 
     }

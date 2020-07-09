@@ -7,7 +7,7 @@ using UnityEngine;
 public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] ContuConnectionHandler connectionHandler;
-    [SerializeField] DebugView debugView;
+    [SerializeField] ChatSystem chatSystem;
     [SerializeField] Transform gameHolder;
 
     [SerializeField] bool sendSuccesfulActions;
@@ -65,8 +65,13 @@ public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
                 break;
 
             case (byte)ContuEventCode.Chat:
-                if(debugView!= null)
-                    debugView.Print(photonEvent.Sender + ": " + (string)photonEvent.CustomData);
+                if(chatSystem!= null)
+                    chatSystem.Print(photonEvent.Sender + ": " + (string)photonEvent.CustomData);
+                break;
+
+            case (byte)ContuEventCode.ChatSoundMessage:
+                if(chatSystem!= null)
+                    chatSystem.PlaySound((int)photonEvent.CustomData);
                 break;
         }
 

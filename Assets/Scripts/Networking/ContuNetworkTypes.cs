@@ -4,7 +4,8 @@ using UnityEngine;
 public enum ContuEventCode
 {
     GameAction = 100,
-    Chat = 110
+    Chat = 110,
+    ChatSoundMessage = 111
 }
 
 public struct ContuActionData
