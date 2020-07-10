@@ -107,7 +107,8 @@ public class ContuConnectionHandler : ConnectionHandler, IConnectionCallbacks, I
 
     public void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-        Debug.Log("Room List Update");
+        Debug.Log("Room List Update: " + roomList.Count + " rooms");
+        RoomListUpdate?.Invoke(roomList);
     }
 
     public void OnLobbyStatisticsUpdate(List<TypedLobbyInfo> lobbyStatistics)

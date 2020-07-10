@@ -45,9 +45,20 @@ public class MainMenuHandler : MonoBehaviour
 
         for (int i = 0; i < rooms.Count; i++)
         {
-            var roomview = Instantiate(prefab_joinRoomView, new Vector3(0, -40 * i, 0), Quaternion.identity, t_roomListParent).GetComponent<RoomViewElement>();
+            var roomview = Instantiate(prefab_joinRoomView, t_roomListParent).GetComponent<RoomViewElement>();
             var room = rooms[i];
-            roomview.Setup(room.Name, room.IsOpen);
+            roomview.Setup(room, OnRoomTryJoin);
+            roomview.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -40 * i);
+        }
+    }
+
+    private void OnRoomTryJoin(RoomInfo room)
+    {
+        var enterRoomParams = new EnterRoomParams();
+        enterRoomParams.RoomName = room.Name;
+        if (ContuConnectionHandler.Instance.Client.OpJoinRoom(enterRoomParams))
+        {
+            EnterRoomView();
         }
     }
 

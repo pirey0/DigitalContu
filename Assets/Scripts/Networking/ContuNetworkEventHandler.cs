@@ -69,7 +69,7 @@ public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
 
             case (byte)ContuEventCode.Chat:
                 if(chatSystem!= null)
-                    chatSystem.Print(photonEvent.Sender + ": " + (string)photonEvent.CustomData);
+                    chatSystem.Print(ContuConnectionHandler.Instance.Client.CurrentRoom.GetPlayer(photonEvent.Sender).NickName + ": " + (string)photonEvent.CustomData);
                 break;
 
             case (byte)ContuEventCode.ChatSoundMessage:
