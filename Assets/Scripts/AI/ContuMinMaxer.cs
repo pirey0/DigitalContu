@@ -36,16 +36,17 @@ public class ContuMinMaxer
             float value = float.MinValue;
             ResultData max = null;
             ContuActionData? action = null;
-            foreach (var item in game.GetPossibleMoves())
-            {
+            var enumerator = game.GetPossibleMoves();
+            while(enumerator.MoveNext())
+            { 
                 ContuGame subGame = ContuGame.Clone(game);
-                subGame.TryAction(item, false, false);
+                subGame.TryAction(enumerator.Current, false, false);
                 var heur = MinMax(subGame, depth - 1, false);
                 if(heur.Value > value)
                 {
                     value = heur.Value;
                     max = heur;
-                    action = item;
+                    action = enumerator.Current;
                 }
             }
             max.Actions.Add(action.Value);
@@ -56,16 +57,17 @@ public class ContuMinMaxer
             float value = float.MaxValue;
             ResultData min = null;
             ContuActionData? action = null;
-            foreach (var item in game.GetPossibleMoves())
+            var enumerator = game.GetPossibleMoves();
+            while (enumerator.MoveNext())
             {
                 ContuGame subGame = ContuGame.Clone(game);
-                subGame.TryAction(item, false, false);
+                subGame.TryAction(enumerator.Current, false, false);
                 var heur = MinMax(subGame, depth - 1, true);
                 if (heur.Value < value)
                 {
                     value = heur.Value;
                     min = heur;
-                    action = item;
+                    action = enumerator.Current;
                 }
             }
             min.Actions.Add(action.Value);
