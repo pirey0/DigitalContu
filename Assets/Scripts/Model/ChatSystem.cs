@@ -59,10 +59,11 @@ public class ChatSystem : MonoBehaviour
         {
             var moves = game.GetPossibleMoves();
             Print("Moves Found: ");
-            foreach (var move in moves)
+            while(moves.MoveNext())
             {
-                Print(move.ToString());
+                Print(moves.Current.ToString());
             }
+            
         }
         else if(content == "/eval")
         {

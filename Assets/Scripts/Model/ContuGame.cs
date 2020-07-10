@@ -174,9 +174,8 @@ public class ContuGame
 
     }
 
-    public List<ContuActionData> GetPossibleMoves()
+    public IEnumerator<ContuActionData> GetPossibleMoves()
     {
-        List<ContuActionData> viableMoves = new List<ContuActionData>();
         ContuActionData attempt;
 
         for (int i = 0; i < board.TokenCount; i++)
@@ -184,7 +183,7 @@ public class ContuGame
             attempt = new ContuActionData((int)TurnState, ActionType.TakeToken, i);
             if(ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters) == ExecutionCheckResult.Success)
             {
-                viableMoves.Add(attempt);
+                yield return attempt;
             }
 
             if (board.GetToken(i).BelongsTo((int)TurnState))
@@ -200,7 +199,7 @@ public class ContuGame
                                 attempt = new ContuActionData((int)TurnState, ActionType.UseToken, i, x1, y1, x2, y2);
                                 if (ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters) == ExecutionCheckResult.Success)
                                 {
-                                    viableMoves.Add(attempt);
+                                    yield return attempt;
                                 }
                             }
                         }
@@ -216,12 +215,11 @@ public class ContuGame
                 attempt = new ContuActionData((int)TurnState, ActionType.Place, x, y);
                 if (ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters) == ExecutionCheckResult.Success)
                 {
-                    viableMoves.Add(attempt);
+                    yield return attempt;
                 }
             }
         }
 
-        return viableMoves;
     }
 
     private void TickTokens()
