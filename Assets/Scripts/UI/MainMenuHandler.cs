@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
-using WebSocketSharp;
 
 public class MainMenuHandler : MonoBehaviour
 {
@@ -118,7 +117,7 @@ public class MainMenuHandler : MonoBehaviour
     public void CreateRoom()
     {
         string lobbyName = i_createLobbyName.text;
-        if (lobbyName.IsNullOrEmpty())
+        if (lobbyName  == string.Empty)
             lobbyName = "newRoom" + UnityEngine.Random.Range(1000, 9999);
 
         if (ContuConnectionHandler.Instance.TryCreateRoom(lobbyName))
