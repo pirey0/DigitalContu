@@ -1,4 +1,5 @@
 ﻿using Photon.Pun;
+using System.Text;
 using UnityEngine;
 
 public enum ContuEventCode
@@ -50,5 +51,17 @@ public struct ContuActionData
         return new ContuActionData(userId, actionType, parameters);
     }
 
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append(UserId + ": " + Action.ToString());
+
+        foreach (var item in Parameters)
+        {
+            sb.Append(" " + item);
+        }
+
+        return sb.ToString();
+    }
 
 }

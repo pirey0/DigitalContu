@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class Token
 {
@@ -56,6 +57,23 @@ public class Token
         return false;
     }
 
+    public bool BelongsTo(int userId)
+    {
+        switch (state)
+        {
+            case TokenState.P1Owned:
+                if (userId == 0)
+                    return true;
+                break;
+
+            case TokenState.P2Exausted:
+                if (userId == 1)
+                    return true;
+                break;
+        }
+        return false;
+    }
+
     public bool CanChangeStateTo(TokenState tokenState)
     {
         return STATECHANGE_VALIDITY[(int)state, (int)tokenState] > 0;
@@ -66,6 +84,13 @@ public class Token
         return type.ToString() + " (" + state.ToString() + ")" + (exhaustCount>0? "[" + exhaustCount.ToString() + "]" : "");
     }
 
+    internal static Token Clone(Token token)
+    {
+        Token newTok = new Token(token.type, token.exhaustDuration);
+        newTok.exhaustCount = token.exhaustCount;
+        newTok.state = token.state;
+        return newTok;
+    }
 }
 
 public enum TokenState

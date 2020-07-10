@@ -29,8 +29,11 @@ public class VisualBoard : MonoBehaviour
     {
         game = gameHolder.GetComponent<IContuGameOwner>().GetGame();
         interactionState = InteractionState.Selecting;
+
+        if(interactionStateText)
         interactionStateText.text = interactionState.ToString();
 
+        if(connectionHandler)
         connectionHandler.RoomJoined += OnRoomJoined;
 
         game.TurnChanged += OnTurnChanged;
@@ -78,7 +81,10 @@ public class VisualBoard : MonoBehaviour
     private void OnTurnChanged()
     {
         interactionState = InteractionState.Selecting;
-        interactionStateText.text = interactionState.ToString();
+        if(interactionStateText != null)
+            interactionStateText.text = interactionState.ToString();
+
+        if(turnText!=null)
         turnText.text = "Turn: " + game.Turn + " " + game.TurnState;
     }
 

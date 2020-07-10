@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -32,6 +33,21 @@ public class ContuBoard
         board.tiles[2, 7] = TileType.Player2;
 
         return board;
+    }
+
+    public static ContuBoard Clone(ContuBoard b1)
+    {
+        ContuBoard b2 = new ContuBoard();
+        b2.width = b1.width;
+        b2.height = b1.height;
+        b2.tiles = (TileType[,]) b1.tiles.Clone();
+        b2.tokens = new Token[b1.TokenCount];
+
+        for (int i = 0; i < b1.TokenCount; i++)
+        {
+            b2.tokens[i] = Token.Clone(b1.GetToken(i));
+        }
+        return b2;
     }
 
     public TileType GetTile(int x, int y)

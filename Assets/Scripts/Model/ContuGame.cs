@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ContuGame 
@@ -26,6 +27,17 @@ public class ContuGame
         game.turnCount = 1;
 
         return game;
+    }
+
+    public static ContuGame Clone(ContuGame g1)
+    {
+        ContuGame g2 = new ContuGame();
+        g2.board = ContuBoard.Clone(g1.board);
+        g2.state = g1.state;
+        g2.turnCount = g1.turnCount;
+        g2.gameFinished = g1.gameFinished;
+
+        return g2;
     }
 
     public ExecutionCheckResult TryAction(ContuActionData data, bool log, bool networkCalled)
@@ -160,6 +172,56 @@ public class ContuGame
             TurnChanged?.Invoke();
         }
 
+    }
+
+    public List<ContuActionData> GetPossibleMoves()
+    {
+        List<ContuActionData> viableMoves = new List<ContuActionData>();
+        ContuActionData attempt;
+
+        for (int i = 0; i < board.TokenCount; i++)
+        {
+            attempt = new ContuActionData((int)TurnState, ActionType.TakeToken, i);
+            if(ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters) == ExecutionCheckResult.Success)
+            {
+                viableMoves.Add(attempt);
+            }
+
+            if (board.GetToken(i).BelongsTo((int)TurnState))
+            {
+                for (int y1 = 0; y1 < board.Height; y1++)
+                {
+                    for (int x1 = 0; x1 < board.Width; x1++)
+                    {
+                        for (int y2 = 0; y2 < board.Height; y2++)
+                        {
+                            for (int x2 = 0; x2 < board.Width; x2++)
+                            {
+                                attempt = new ContuActionData((int)TurnState, ActionType.UseToken, i, x1, y1, x2, y2);
+                                if (ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters) == ExecutionCheckResult.Success)
+                                {
+                                    viableMoves.Add(attempt);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int y = 0; y < board.Height; y++)
+        {
+            for (int x = 0; x < board.Width; x++)
+            {
+                attempt = new ContuActionData((int)TurnState, ActionType.Place, x, y);
+                if (ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters) == ExecutionCheckResult.Success)
+                {
+                    viableMoves.Add(attempt);
+                }
+            }
+        }
+
+        return viableMoves;
     }
 
     private void TickTokens()

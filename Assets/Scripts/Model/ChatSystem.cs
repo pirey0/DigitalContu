@@ -55,7 +55,20 @@ public class ChatSystem : MonoBehaviour
 
     public void OnCommandSent(string content)
     {
-        if(content.StartsWith("/do "))
+        if(content == "/moves")
+        {
+            var moves = game.GetPossibleMoves();
+            Print("Moves Found: ");
+            foreach (var move in moves)
+            {
+                Print(move.ToString());
+            }
+        }
+        else if(content == "/eval")
+        {
+            Print("Eval: " + ContuMinMaxer.EvaluateBoard(game.Board));
+        }
+        else if(content.StartsWith("/do "))
         {
             content = content.Substring(4);
             var input = content.Split(' ');
@@ -89,7 +102,6 @@ public class ChatSystem : MonoBehaviour
             Print("Me: " + content);
             network.RaiseEvent((byte)ContuEventCode.Chat, content);
         }
-
     }
 
     private int[] GetParams(string[] input)

@@ -7,12 +7,19 @@ public interface IContuGameOwner
 }
 public class ModelTester : MonoBehaviour, IContuGameOwner
 {
-    ContuGame game;
     [SerializeField] bool draw;
+    [SerializeField] bool testMinMax;
+    [SerializeField] int minMaxDepth;
+
+    ContuGame game;
+    ContuMinMaxer minMaxer;
 
     private void Awake()
     {
         game = ContuGame.NormalGame();
+
+        if (testMinMax)
+            minMaxer = new ContuMinMaxer(game, minMaxDepth);
     }
 
     [Button]
@@ -32,6 +39,26 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         {
             result = RandomAction(log: true);
         } while (result != ExecutionCheckResult.Success);
+    }
+
+    [Button]
+    private void EvaluateMinMax()
+    {
+        if(minMaxer != null)
+        {
+            Debug.Log("MinMax Result: " + minMaxer.Evaluate(minMaxDepth).ToString());
+        }
+    }
+
+    [Button]
+    private void PlayOutMinMax()
+    {
+        var r = minMaxer.Evaluate(minMaxDepth);
+
+        foreach (var action in r.Actions)
+        {
+            game.TryAction(action, false, false);
+        }
     }
 
     private ExecutionCheckResult RandomAction(bool log)
