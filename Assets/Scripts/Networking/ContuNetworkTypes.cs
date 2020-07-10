@@ -6,7 +6,8 @@ public enum ContuEventCode
 {
     GameAction = 100,
     Chat = 110,
-    ChatSoundMessage = 111
+    ChatSoundMessage = 111,
+    LoadScene = 90
 }
 
 public struct ContuActionData

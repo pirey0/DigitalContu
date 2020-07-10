@@ -620,9 +620,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1003034952}
-  - component: {fileID: 1003034951}
   - component: {fileID: 1003034953}
-  - component: {fileID: 1003034950}
   m_Layer: 0
   m_Name: Networking
   m_TagString: Untagged
@@ -630,48 +628,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1003034950
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1003034949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0b3ce6748186d3468e0dbaecb38b04c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  KeepAliveInBackground: 60000
-  ApplyDontDestroyOnLoad: 1
---- !u!114 &1003034951
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1003034949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d58c6f324390ed14b92270cf2cda4bc8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  appSettings:
-    AppIdRealtime: 8c52df49-394b-4837-9c73-6e9d223439b9
-    AppIdChat: 
-    AppIdVoice: 
-    AppVersion: 
-    UseNameServer: 1
-    FixedRegion: 
-    Server: 
-    Port: 0
-    ProxyServer: 
-    Protocol: 0
-    EnableProtocolFallback: 1
-    AuthMode: 0
-    EnableLobbyStatistics: 0
-    NetworkLogging: 1
-  connectionHandler: {fileID: 1003034950}
 --- !u!4 &1003034952
 Transform:
   m_ObjectHideFlags: 0
@@ -698,7 +654,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 276d90ece7998f54eb4fc52cc6cb1bd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  connectionHandler: {fileID: 1003034951}
   chatSystem: {fileID: 2114748490}
   gameHolder: {fileID: 350829402}
   sendSuccesfulActions: 1
@@ -1038,7 +993,7 @@ PrefabInstance:
         type: 3}
       propertyPath: connectionHandler
       value: 
-      objectReference: {fileID: 1003034951}
+      objectReference: {fileID: 0}
     - target: {fileID: 4116014439781433086, guid: 7f95b363f6c3b334e93ebc5fe3b6b3d2,
         type: 3}
       propertyPath: m_LocalPosition.x

@@ -6,22 +6,25 @@ using UnityEngine;
 [DefaultExecutionOrder(100)]
 public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
 {
-    [SerializeField] ContuConnectionHandler connectionHandler;
     [SerializeField] ChatSystem chatSystem;
     [SerializeField] Transform gameHolder;
 
     [SerializeField] bool sendSuccesfulActions;
     [SerializeField] bool log;
 
-    LoadBalancingClient client;
     ContuGame game;
 
-    public int LocalPlayerId { get => client.LocalPlayer.ActorNumber - 1; }
+    public int LocalPlayerId { get => ContuConnectionHandler.Instance.Client.LocalPlayer.ActorNumber - 1; }
     private void Start()
     {
-        client = connectionHandler.Client;
+        if(ContuConnectionHandler.Instance == null)
+        {
+            Debug.Log("No ContuConnectionHandler, disabling networking");
+            Destroy(gameObject);
+            return;
+        }
 
-        client.AddCallbackTarget(this);
+        ContuConnectionHandler.Instance.Client.AddCallbackTarget(this);
 
         game = gameHolder.GetComponent<IContuGameOwner>().GetGame();
         if(game != null)
@@ -45,7 +48,7 @@ public class ContuNetworkEventHandler : MonoBehaviour, IOnEventCallback
             Debug.Log(eventCode + " " + customEventContent.ToString());
         }
 
-        client.OpRaiseEvent(eventCode, customEventContent, RaiseEventOptions.Default, SendOptions.SendReliable);
+        ContuConnectionHandler.Instance.Client.OpRaiseEvent(eventCode, customEventContent, RaiseEventOptions.Default, SendOptions.SendReliable);
     }
 
     public void RaiseContuActionEvent(ContuActionData actionData)

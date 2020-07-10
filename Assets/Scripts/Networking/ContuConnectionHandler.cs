@@ -3,42 +3,75 @@ using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatchmakingCallbacks, ILobbyCallbacks, IInRoomCallbacks
+[DefaultExecutionOrder(-1000)]
+public class ContuConnectionHandler : ConnectionHandler, IConnectionCallbacks, IMatchmakingCallbacks, ILobbyCallbacks, IInRoomCallbacks, IOnEventCallback
 {
+    private static ContuConnectionHandler instance;
+
     [SerializeField] private AppSettings appSettings = new AppSettings();
-    [SerializeField] private ConnectionHandler connectionHandler;
 
-
-    private LoadBalancingClient client;
+    State currentState = State.ExpectingRegionList;
 
     public event System.Action RoomJoined;
+    public event System.Action<Player> PlayerEnteredRoom, PlayerLeftRoom;
+    public event System.Action StateChanged;
+    public event System.Action<List<RoomInfo>> RoomListUpdate;
 
-    public LoadBalancingClient Client { get => client; } 
+    public State CurrentState { get => currentState; }
+    public static ContuConnectionHandler Instance { get => instance; }
 
+    protected override void Awake()
+    {
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        base.Awake();
+    }
     public void Start()
     {
-        this.client = new LoadBalancingClient();
-        this.client.AddCallbackTarget(this);
+        Client = new LoadBalancingClient(ConnectionProtocol.Udp);
 
-        if (!this.client.ConnectUsingSettings(appSettings))
+        Client.AddCallbackTarget(this);
+
+        if (!this.Client.ConnectUsingSettings(appSettings))
         {
             Debug.LogError("Error while connecting");
         }
 
-        if (this.connectionHandler != null)
-        {
-            this.connectionHandler.Client = this.client;
-            this.connectionHandler.StartFallbackSendAckThread();
-        }
+        StartFallbackSendAckThread();
     }
 
     public void Update()
     {
-        if (client != null)
-        {
-            client.Service();
-        }
+         Client.Service();
+    }
+
+    public void SetState(State newState)
+    {
+        currentState = newState;
+        StateChanged?.Invoke();
+    }
+
+    public bool TryCreateRoom(string name)
+    {
+        if (CurrentState != State.ReadyForRoom)
+            return false;
+
+        EnterRoomParams roomParams = new EnterRoomParams();
+        roomParams.RoomName = name;
+        return Client.OpCreateRoom(roomParams);
+    }
+
+    public void RequestRooms()
+    {
+        
     }
 
     public void OnConnected()
@@ -47,13 +80,14 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
 
     public void OnConnectedToMaster()
     {
-        Debug.Log("OnConnectedToMaster");
-        this.client.OpJoinRandomRoom();    // joins any open room (no filter)
+        Debug.Log("Connected To Master");
+        SetState(State.ReadyForRoom);
+        Client.OpJoinLobby(TypedLobby.Default);
     }
 
     public void OnDisconnected(DisconnectCause cause)
     {
-        Debug.Log("OnDisconnected(" + cause + ")");
+        Debug.Log(" Disconnected (" + cause + ")");
     }
 
     public void OnCustomAuthenticationResponse(Dictionary<string, object> data)
@@ -66,12 +100,14 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
 
     public void OnRegionListReceived(RegionHandler regionHandler)
     {
-        Debug.Log("OnRegionListReceived");
+        Debug.Log("Region List Received");
+        SetState(State.ConnectingToMaster);
         regionHandler.PingMinimumOfRegions(this.OnRegionPingCompleted, null);
     }
 
     public void OnRoomListUpdate(List<RoomInfo> roomList)
     {
+        Debug.Log("Room List Update");
     }
 
     public void OnLobbyStatisticsUpdate(List<TypedLobbyInfo> lobbyStatistics)
@@ -80,6 +116,7 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
 
     public void OnJoinedLobby()
     {
+        Debug.Log("In Lobby");
     }
 
     public void OnLeftLobby()
@@ -100,7 +137,7 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
 
     public void OnJoinedRoom()
     {
-        Debug.Log("Room Joined");
+        SetState(State.InRoom);
         RoomJoined?.Invoke();
     }
 
@@ -110,12 +147,11 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
 
     public void OnJoinRandomFailed(short returnCode, string message)
     {
-        Debug.Log("OnJoinRandomFailed");
-        this.client.OpCreateRoom(new EnterRoomParams());
     }
 
     public void OnLeftRoom()
     {
+        SetState(State.ReadyForRoom);
     }
 
     /// <summary>A callback of the RegionHandler, provided in OnRegionListReceived.</summary>
@@ -124,17 +160,19 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
     {
         Debug.Log("RegionPingSummary: " + regionHandler.SummaryToCache);
         Debug.Log("OnRegionPingCompleted " + regionHandler.BestRegion);
-        this.client.ConnectToRegionMaster(regionHandler.BestRegion.Code);
+        Client.ConnectToRegionMaster(regionHandler.BestRegion.Code);
     }
 
     public void OnPlayerEnteredRoom(Player newPlayer)
     {
         Debug.Log(newPlayer + " Joined the room");
+        PlayerEnteredRoom?.Invoke(newPlayer);
     }
 
     public void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.Log( otherPlayer.NickName + " left the room");
+        PlayerLeftRoom?.Invoke(otherPlayer);
     }
 
     public void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
@@ -151,5 +189,28 @@ public class ContuConnectionHandler : MonoBehaviour, IConnectionCallbacks, IMatc
     {
         Debug.Log("MasterClient Switched");
     }
-}
 
+    public void OnEvent(EventData photonEvent)
+    {
+        switch (photonEvent.Code)
+        {
+            case (byte)ContuEventCode.LoadScene:
+                EventDrivenLoadScene((int)photonEvent.CustomData);
+                break;
+        }
+    }
+
+    public void EventDrivenLoadScene(int index)
+    {
+        SceneManager.LoadScene(index);
+    }
+
+    public enum State
+    {
+        ExpectingRegionList,
+        ConnectingToMaster,
+        ReadyForRoom,
+        InRoom,
+        InGames
+    }
+}
