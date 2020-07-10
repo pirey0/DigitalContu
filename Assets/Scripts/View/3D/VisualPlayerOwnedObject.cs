@@ -1,4 +1,5 @@
 ﻿using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,12 +16,8 @@ public class VisualPlayerOwnedObject : MonoBehaviour
 {
     [SerializeField]
     TileType owner;
+    [SerializeField]
     visualObjectType type;
-
-    private void Start()
-    {
-        UpdateColor();
-    }
 
     [Button]
     public void UpdateColor ()
@@ -34,6 +31,18 @@ public class VisualPlayerOwnedObject : MonoBehaviour
         {
             renderer.material = playerMaterial;
         }
+    }
+
+    private void Start()
+    {
+        UpdateColor();
+    }
+
+    internal void Init(TileType type)
+    {
+        owner = type;
+
+        UpdateColor();
     }
 
     public void Destroy ()

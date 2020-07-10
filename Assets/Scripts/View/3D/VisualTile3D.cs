@@ -7,18 +7,23 @@ using UnityEngine;
 public class VisualTile3D : MonoBehaviour
 {
     List<VisualPlayerOwnedObject> visualizations = new List<VisualPlayerOwnedObject>();
-    TileType owner;
 
     internal void SwitchTo(TileType type)
     {
         foreach (var visualization in visualizations)
         {
             visualization.Destroy();
-        } 
+        }
         
         if (type == TileType.Player1 || type == TileType.Player2)
         {
-            VisualObjectSpawner.SpawnObject(visualObjectType.Village,this);
+            VisualPlayerOwnedObject visualization = VisualObjectSpawner.SpawnObject(visualObjectType.Village, this);
+
+            if (visualization != null)
+            {
+                visualization.Init(type);
+                visualizations.Add(visualization);
+            }
         }
     }
 
