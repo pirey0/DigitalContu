@@ -478,6 +478,8 @@ MonoBehaviour:
   draw: 0
   testMinMax: 1
   minMaxDepth: 2
+  playerTime: 99999
+  increment: 100
 --- !u!4 &350829402
 Transform:
   m_ObjectHideFlags: 0

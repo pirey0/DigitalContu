@@ -10,16 +10,23 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     [SerializeField] bool draw;
     [SerializeField] bool testMinMax;
     [SerializeField] int minMaxDepth;
+    [SerializeField] float playerTime, increment;
 
-    ContuGame game;
+    SpeedContuGame game;
     ContuMinMaxer minMaxer;
 
     private void Awake()
     {
-        game = ContuGame.NormalGame();
+        game = SpeedContuGame.NormalGame(playerTime, increment);
 
         if (testMinMax)
             minMaxer = new ContuMinMaxer(game, minMaxDepth);
+    }
+
+    [Button]
+    private void LogSpeedTimeLeft()
+    {
+        Debug.Log("Clock: " + ((int)game.GetTimeLeft(0)) + " to " + ((int) game.GetTimeLeft(1)));
     }
 
     [Button]
