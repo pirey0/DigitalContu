@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class ContuGame 
 {
-    ContuBoard board;
-    TurnState state;
-    int turnCount;
-    bool gameFinished;
+    protected ContuBoard board;
+    protected TurnState state;
+    protected int turnCount;
+    protected bool gameFinished;
 
     public event System.Action<BoardState> BoardStateChanged;
     public event System.Action TurnChanged;
@@ -147,7 +147,7 @@ public class ContuGame
         token.TryChangeState(userId==0 ? TokenState.P1Owned : TokenState.P2Owned);
     }
 
-    private void PassTurn()
+    protected virtual void PassTurn()
     {
         if (state == TurnState.Player1)
         {

@@ -12,7 +12,6 @@ public class VisualBoard : MonoBehaviour
     [SerializeField] Text stateText, turnText, interactionStateText, idText;
     [SerializeField] Camera camera;
     [SerializeField] ContuNetworkEventHandler eventHandler;
-    [SerializeField] ContuConnectionHandler connectionHandler;
 
     [SerializeField] Transform[] freeLocations, p1Locations, p2Locations, p1ExLocations, p2ExLocations;
 
@@ -33,8 +32,8 @@ public class VisualBoard : MonoBehaviour
         if(interactionStateText)
         interactionStateText.text = interactionState.ToString();
 
-        if(connectionHandler)
-        connectionHandler.RoomJoined += OnRoomJoined;
+        if(ContuConnectionHandler.Instance != null)
+            ContuConnectionHandler.Instance.RoomJoined += OnRoomJoined;
 
         game.TurnChanged += OnTurnChanged;
         game.ActionExecuted += OnActionExecuted;
@@ -239,7 +238,14 @@ public class VisualBoard : MonoBehaviour
 
     private int GetPlayerId()
     {
-        return eventHandler.LocalPlayerId;
+        if (ContuConnectionHandler.Instance != null)
+        {
+            return ContuConnectionHandler.Instance.Client.LocalPlayer.ActorNumber - 1;
+        }
+        else
+        {
+            return ((int)game.TurnState);
+        }
     }
 
     private void SpawnBoard()
