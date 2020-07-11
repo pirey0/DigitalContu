@@ -67,7 +67,7 @@ public class ChatSystem : MonoBehaviour
         }
         else if(content == "/eval")
         {
-            Print("Eval: " + ContuMinMaxer.EvaluateBoard(game.Board));
+            Print("Eval: " + BoardEvaluators.NaiveEvaluate(game.Board));
         }
         else if(content.StartsWith("/do "))
         {

@@ -412,8 +412,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   draw: 0
-  testMinMax: 1
-  minMaxDepth: 4
+  createEvaluator: 1
+  evaluatorDepth: 9
+  playerTime: 0
+  increment: 0
 --- !u!4 &350829402
 Transform:
   m_ObjectHideFlags: 0
@@ -747,9 +749,9 @@ MonoBehaviour:
   turnText: {fileID: 0}
   interactionStateText: {fileID: 0}
   idText: {fileID: 0}
+  speedContuText: {fileID: 0}
   camera: {fileID: 519420031}
   eventHandler: {fileID: 0}
-  connectionHandler: {fileID: 0}
   freeLocations:
   - {fileID: 1082260928}
   - {fileID: 653170760}

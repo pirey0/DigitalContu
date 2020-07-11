@@ -8,25 +8,28 @@ public interface IContuGameOwner
 public class ModelTester : MonoBehaviour, IContuGameOwner
 {
     [SerializeField] bool draw;
-    [SerializeField] bool testMinMax;
-    [SerializeField] int minMaxDepth;
+    [SerializeField] bool createEvaluator;
+    [SerializeField] int evaluatorDepth;
     [SerializeField] float playerTime, increment;
 
     SpeedContuGame game;
-    ContuMinMaxer minMaxer;
+    IGameEvaluator evaluator;
 
     private void Awake()
     {
         game = SpeedContuGame.NormalGame(playerTime, increment);
 
-        if (testMinMax)
-            minMaxer = new ContuMinMaxer(game, minMaxDepth);
+        if (createEvaluator)
+        {
+            evaluator = new SelectiveMinMaxer(2);
+            evaluator.Setup(game);
+        }
     }
 
     [Button]
     private void LogPermutationsAtDepth()
     {
-        Debug.Log("Permuations: " + minMaxDepth + " -> " + minMaxer.GetPermutations(minMaxDepth));
+        Debug.Log("Permuations: " + evaluatorDepth + " -> " + evaluator.GetPermutations(evaluatorDepth));
     }
 
     [Button]
@@ -55,18 +58,18 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     }
 
     [Button]
-    private void EvaluateMinMax()
+    private void EvaluateEvaluator()
     {
-        if(minMaxer != null)
+        if(evaluator != null)
         {
-            Debug.Log("MinMax Result: " + minMaxer.Evaluate(minMaxDepth, logSpeed:true).ToString());
+            Debug.Log("Evaluator Result: " + evaluator.Evaluate(evaluatorDepth, logSpeed: true).ToString());
         }
     }
 
     [Button]
-    private void PlayOutMinMax()
+    private void PlayOutEvaluator()
     {
-        var r = minMaxer.Evaluate(minMaxDepth);
+        var r = evaluator.Evaluate(evaluatorDepth);
 
         foreach (var action in r.Actions)
         {
