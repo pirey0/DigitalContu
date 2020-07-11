@@ -30,14 +30,38 @@ public class SpeedContuGame : ContuGame
     {
         if(playerId == 0)
         {
-            return p1TimeLeft - (TurnState == TurnState.Player1 ? (Time.time - lastTimeStamp) : 0);
+            float time = p1TimeLeft;
+
+            if(TurnState == TurnState.Player1 && turnCount>1)
+            {
+                 time -= Time.time - lastTimeStamp;
+            }
+
+            return time;
         }
         else if(playerId == 1)
         {
-            return p2TimeLeft - (TurnState == TurnState.Player2 ? (Time.time - lastTimeStamp) : 0);
+            float time = p2TimeLeft;
+
+            if (TurnState == TurnState.Player2 && turnCount > 1)
+            {
+                time -= Time.time - lastTimeStamp;
+            }
+
+            return time;
         }
 
         return 0;
+    }
+
+    public void UpdateTimes()
+    {
+        float t = GetTimeLeft((int)TurnState);
+
+        if(t < 0)
+        {
+            FinishGame(TurnState == TurnState.Player1 ? BoardState.P2Won : BoardState.P1Won);
+        }
     }
 
     protected override void PassTurn()

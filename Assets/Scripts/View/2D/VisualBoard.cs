@@ -9,13 +9,13 @@ public class VisualBoard : MonoBehaviour
 {
     [SerializeField] GameObject tilePrefab, tokenPrefab;
     [SerializeField] GameObject gameHolder;
-    [SerializeField] Text stateText, turnText, interactionStateText, idText;
+    [SerializeField] Text stateText, turnText, interactionStateText, idText, speedContuText;
     [SerializeField] Camera camera;
     [SerializeField] ContuNetworkEventHandler eventHandler;
 
     [SerializeField] Transform[] freeLocations, p1Locations, p2Locations, p1ExLocations, p2ExLocations;
 
-    ContuGame game;
+    SpeedContuGame game;
     VisualTile[,] visualTiles;
     VisualToken[] visualTokens;
 
@@ -26,7 +26,7 @@ public class VisualBoard : MonoBehaviour
 
     private void Start()
     {
-        game = gameHolder.GetComponent<IContuGameOwner>().GetGame();
+        game = (SpeedContuGame)gameHolder.GetComponent<IContuGameOwner>().GetGame();
         interactionState = InteractionState.Selecting;
 
         if(interactionStateText)
@@ -108,6 +108,11 @@ public class VisualBoard : MonoBehaviour
             }
         }
 
+        if(speedContuText != null)
+        {
+            game.UpdateTimes();
+            speedContuText.text = "P1: " + game.GetTimeLeft(0) + Environment.NewLine +"P2: " + game.GetTimeLeft(1); 
+        }
     }
 
     private void UpdateTokenView()

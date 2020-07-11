@@ -164,14 +164,19 @@ public class ContuGame
         var boardState = board.GetBoardState();
         if (boardState != BoardState.Playing)
         {
-            gameFinished = true;
-            BoardStateChanged?.Invoke(boardState);
+            FinishGame(boardState);   
         }
         else
         {
             TurnChanged?.Invoke();
         }
 
+    }
+
+    protected void FinishGame(BoardState endingState)
+    {
+        gameFinished = true;
+        BoardStateChanged?.Invoke(endingState);
     }
 
     public IEnumerator<ContuActionData> GetPossibleMoves()

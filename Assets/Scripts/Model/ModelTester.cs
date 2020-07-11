@@ -24,6 +24,12 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     }
 
     [Button]
+    private void LogPermutationsAtDepth()
+    {
+        Debug.Log("Permuations: " + minMaxDepth + " -> " + minMaxer.GetPermutations(minMaxDepth));
+    }
+
+    [Button]
     private void LogSpeedTimeLeft()
     {
         Debug.Log("Clock: " + ((int)game.GetTimeLeft(0)) + " to " + ((int) game.GetTimeLeft(1)));
@@ -53,7 +59,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     {
         if(minMaxer != null)
         {
-            Debug.Log("MinMax Result: " + minMaxer.Evaluate(minMaxDepth).ToString());
+            Debug.Log("MinMax Result: " + minMaxer.Evaluate(minMaxDepth, logSpeed:true).ToString());
         }
     }
 

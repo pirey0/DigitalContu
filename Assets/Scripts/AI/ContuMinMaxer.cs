@@ -15,10 +15,24 @@ public class ContuMinMaxer
         this.depth = depth;
     }
 
-    public ResultData Evaluate(int customDepth = -1)
+    public ResultData Evaluate(int customDepth = -1, bool logSpeed = false)
     {
+        System.Diagnostics.Stopwatch stopwatch = null;
+        if (logSpeed)
+        {
+            stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+        }
+        
         var res = MinMax(game, customDepth > 0 ? customDepth : depth, game.TurnState == TurnState.Player1);
         res.Actions.Reverse();
+
+        if (logSpeed)
+        {
+            stopwatch.Stop();
+            Debug.Log("MinMax took " + stopwatch.ElapsedMilliseconds.ToString() + "ms ");
+        }
+        
         return res;
     }
 
@@ -73,6 +87,38 @@ public class ContuMinMaxer
             min.Actions.Add(action.Value);
             return min;
         }
+    }
+
+    public int GetPermutations(int depth)
+    {
+        return GetPermutationsAtDepth(game, depth);
+    }
+
+
+    ///Testing indiactes that the current games Permutations follow aproximately this curve: y = 0.00026*x^12
+    ///With a depth of 30 this would be aprox 138.174.660.000.000 board states to evaluate....
+    ///                50                     63.476.562.500.000.000
+    ///                10                     260.000.000
+    ///This means that to run the algorithm at depth 10 in 1second we need a board eval to take: 1/260 000 000 = 3,84ns (s^-9)
+    ///That would be 1 board eval in 16cpu cyces (4GHZ) ((Impossible)
+    ///Current Speeds: depth 5 (57920 permutations) 1382ms -> 1 382 000 000ns for 57920 -> 23 860 ns/boardEval
+    /// Current algorithm (Crude MinMax No-opt) is 6200 times slower then desired
+
+
+    private int GetPermutationsAtDepth(ContuGame game, int depth)
+    {
+        if (depth <= 0) // || node is leaf
+            return 1;
+
+        int count = 0;
+        var enumerator = game.GetPossibleMoves();
+        while (enumerator.MoveNext())
+        {
+            ContuGame subGame = ContuGame.Clone(game);
+            subGame.TryAction(enumerator.Current, false, false);
+            count += GetPermutationsAtDepth(subGame, depth - 1);
+        }
+        return count;
     }
 
     public static float EvaluateBoard(ContuBoard board)
