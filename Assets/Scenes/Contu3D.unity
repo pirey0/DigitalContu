@@ -534,6 +534,8 @@ MonoBehaviour:
   draw: 0
   testMinMax: 1
   minMaxDepth: 2
+  playerTime: 0
+  increment: 0
 --- !u!1 &425762824
 GameObject:
   m_ObjectHideFlags: 0
@@ -963,6 +965,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d58c6f324390ed14b92270cf2cda4bc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  KeepAliveInBackground: 60000
+  ApplyDontDestroyOnLoad: 1
   appSettings:
     AppIdRealtime: 8c52df49-394b-4837-9c73-6e9d223439b9
     AppIdChat: 
@@ -978,7 +982,6 @@ MonoBehaviour:
     AuthMode: 0
     EnableLobbyStatistics: 0
     NetworkLogging: 1
-  connectionHandler: {fileID: 1487470621}
 --- !u!114 &1487470621
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1019,7 +1022,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 276d90ece7998f54eb4fc52cc6cb1bd4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  connectionHandler: {fileID: 1487470620}
   chatSystem: {fileID: 1586295555}
   gameHolder: {fileID: 405867851}
   sendSuccesfulActions: 1
@@ -1227,7 +1229,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1677162716}
-  m_Mesh: {fileID: 1090343142266728492, guid: 3b49c2f87a188464cacb06544aa56916, type: 3}
+  m_Mesh: {fileID: 1090343142266728492, guid: b8b8f96ab08a6fd42ad78e06a9693151, type: 3}
 --- !u!1 &1910613902
 GameObject:
   m_ObjectHideFlags: 0
