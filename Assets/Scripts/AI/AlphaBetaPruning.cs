@@ -7,7 +7,7 @@ public class AlphaBetaPruning : GameEvaluator
 {
     protected override GameEvalResult InternalEvaluate(ContuGame game, int depth)
     {
-        return AlphaBeta_Iter(game, depth, float.NegativeInfinity, float.PositiveInfinity, game.TurnState == TurnState.Player1);
+        return AlphaBeta_Rec(game, depth, float.NegativeInfinity, float.PositiveInfinity, game.TurnState == TurnState.Player1);
     }
 
     //https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
