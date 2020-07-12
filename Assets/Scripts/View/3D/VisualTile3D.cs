@@ -12,7 +12,8 @@ public class VisualTile3D : MonoBehaviour
     {
         foreach (var visualization in visualizations)
         {
-            visualization.Destroy();
+            if (visualization != null)
+                Destroy(visualization.gameObject);
         }
         
         if (type == TileType.Player1 || type == TileType.Player2)

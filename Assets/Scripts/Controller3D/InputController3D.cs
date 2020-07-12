@@ -12,7 +12,12 @@ public class InputController3D : MonoBehaviour
     [SerializeField] ContuNetworkEventHandler eventHandler;
     [SerializeField] ContuConnectionHandler connectionHandler;
 
+    [SerializeField] Text stateText, turnText, interactionStateText, idText;
+    [SerializeField] Image currentTurnPlayerImage;
+
     [SerializeField] Transform[] freeLocations, p1Locations, p2Locations, p1ExLocations, p2ExLocations;
+
+    [SerializeField] Transform tileHighlighter;
 
     ContuGame game;
     VisualToken[] visualTokens;
@@ -27,10 +32,9 @@ public class InputController3D : MonoBehaviour
         game = gameHolder.GetComponent<IContuGameOwner>().GetGame();
         interactionState = InteractionState.Selecting;
 
-        /*
         if(interactionStateText)
         interactionStateText.text = interactionState.ToString();
-        */
+
 
         if(connectionHandler)
         connectionHandler.RoomJoined += OnRoomJoined;
@@ -40,47 +44,63 @@ public class InputController3D : MonoBehaviour
 
     private void OnGameStateChanged(BoardState obj)
     {
-        //stateText.text = "State: " + game.Board.GetBoardState();
+        stateText.text = "State: " + game.Board.GetBoardState();
     }
 
     private void OnRoomJoined()
     {
-        //idText.text = "You are Player " + (GetPlayerId()+1);
+        idText.text = "You are Player " + (GetPlayerId()+1);
     }
 
     private void OnTurnChanged()
     {
-        /*
+
         interactionState = InteractionState.Selecting;
         if(interactionStateText != null)
             interactionStateText.text = interactionState.ToString();
 
         if(turnText!=null)
         turnText.text = "Turn: " + game.Turn + " " + game.TurnState;
-        */
+
+        if (currentTurnPlayerImage != null)
+            currentTurnPlayerImage.color = game.TurnState == TurnState.Player1 ? Color.red : Color.blue;
+
     }
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        //do the raycast
+        int layerMask = LayerMask.GetMask("Ground");
+        Camera mainCam = Camera.main;
+        RaycastHit hit;
+        Ray ray = mainCam.ScreenPointToRay(Input.mousePosition);
+
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
-            var mouseInput = Input.mousePosition;
-            Ray r = camera.ScreenPointToRay(mouseInput);
-            Plane plane = new Plane(Vector3.forward, Vector3.zero);
+            Debug.DrawRay(ray.origin, ray.direction * hit.distance, Color.yellow, 5);
 
-            if (plane.Raycast(r, out float dist))
+            if (hit.transform != null && tileHighlighter != null)
             {
-                var point = r.GetPoint(dist);
-                int x = Mathf.FloorToInt(point.x);
-                int y = Mathf.FloorToInt(point.y);
+                tileHighlighter.transform.position = Round(hit.point);
 
-                if (game.Board.GetTile(x, y) != TileType.Null)
+                if (Input.GetMouseButtonDown(0))
                 {
-                    PlayerClicked(x, y);
+                    int x = Mathf.RoundToInt(hit.point.x);
+                    int y = Mathf.RoundToInt(hit.point.z);
+
+                    if (game.Board.GetTile(x, y) != TileType.Null)
+                    {
+                        PlayerClicked(x, y);
+                    }
                 }
             }
         }
+    }
 
+    private Vector3 Round(Vector3 input)
+    {
+        return new Vector3(Mathf.RoundToInt(input.x), Mathf.RoundToInt(input.y), Mathf.RoundToInt(input.z));
     }
 
     private void UpdateTokenView()
@@ -199,8 +219,7 @@ public class InputController3D : MonoBehaviour
     private void ResetSelection()
     {
         interactionState = InteractionState.Selecting;
-        //interactionStateText.text = interactionState.ToString();
-        //highlight?
+        interactionStateText.text = interactionState.ToString();
     }
 
     private void PlacePiece(int x, int y)
@@ -211,8 +230,16 @@ public class InputController3D : MonoBehaviour
 
     private int GetPlayerId()
     {
-        return eventHandler.LocalPlayerId;
+        if (ContuConnectionHandler.Instance != null) 
+        {
+        return ContuConnectionHandler.Instance.Client.LocalPlayer.ActorNumber - 1;
+        }
+        else
+        {
+            return ((int)game.TurnState);
+        }
     }
+
     private void SpawnTokens()
     {
         /*
