@@ -22,7 +22,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         if (createEvaluator)
         {
             evaluator = new SelectiveMinMaxer(2);
-            evaluator.Setup(game);
+            evaluator.Setup(game, BoardEvaluators.DirectionProportionalEvaluation);
         }
     }
 
@@ -64,6 +64,13 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         {
             Debug.Log("Evaluator Result: " + evaluator.Evaluate(evaluatorDepth, logSpeed: true).ToString());
         }
+    }
+
+    [Button]
+    private void EvaluateBoardState()
+    {
+        Debug.Log("BoardEval: " + BoardEvaluators.DirectionProportionalEvaluation(game.Board));
+        
     }
 
     [Button]

@@ -41,8 +41,17 @@ public class SelectiveMinMaxer : GameEvaluator
                     action = move;
                 }
             }
-            max.Actions.Add(action.Value);
-            return max;
+            if (action == null)
+            {
+                var res = new GameEvalResult();
+                res.Value = boardEvaluator(game.Board);
+                return res;
+            }
+            else
+            {
+                max.Actions.Add(action.Value);
+                return max;
+            }
         }
         else
         {
@@ -62,8 +71,17 @@ public class SelectiveMinMaxer : GameEvaluator
                     action = move;
                 }
             }
-            min.Actions.Add(action.Value);
-            return min;
+            if(action == null)
+            {
+                var res = new GameEvalResult();
+                res.Value = boardEvaluator(game.Board);
+                return res;
+            }
+            else
+            {
+                min.Actions.Add(action.Value);
+                return min;
+            }
         }
     }
 
