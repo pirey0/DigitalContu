@@ -52,6 +52,7 @@ public class AlphaBetaPruning : GameEvaluator
         {
             var res = new GameEvalResult();
             res.Value = boardEvaluator(game.Board);
+            res.Value += res.Value > 0 ? -depth*5 : depth*5;
             return res;
         }
         else
