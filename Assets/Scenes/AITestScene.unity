@@ -413,9 +413,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   draw: 0
   createEvaluator: 1
-  evaluatorDepth: 9
+  evaluatorDepth: 6
   playerTime: 0
   increment: 0
+  saveMoves: 0
 --- !u!4 &350829402
 Transform:
   m_ObjectHideFlags: 0

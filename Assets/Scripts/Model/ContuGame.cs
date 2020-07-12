@@ -202,7 +202,8 @@ public class ContuGame
                             for (int x2 = 0; x2 < board.Width; x2++)
                             {
                                 attempt = new ContuActionData((int)TurnState, ActionType.UseToken, i, x1, y1, x2, y2);
-                                if (ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters) == ExecutionCheckResult.Success)
+                                var res = ActionIsValid(attempt.UserId, attempt.Action, attempt.Parameters);
+                                if (res == ExecutionCheckResult.Success)
                                 {
                                     yield return attempt;
                                 }

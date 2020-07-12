@@ -66,7 +66,7 @@ public class Token
                     return true;
                 break;
 
-            case TokenState.P2Exausted:
+            case TokenState.P2Owned:
                 if (userId == 1)
                     return true;
                 break;

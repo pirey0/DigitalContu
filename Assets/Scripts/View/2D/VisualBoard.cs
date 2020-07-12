@@ -48,7 +48,8 @@ public class VisualBoard : MonoBehaviour
 
     private void OnGameStateChanged(BoardState obj)
     {
-        stateText.text = "State: " + game.Board.GetBoardState();
+        if(stateText != null)
+        stateText.text = "State: " + obj;
     }
 
     private void OnRoomJoined()
@@ -211,6 +212,7 @@ public class VisualBoard : MonoBehaviour
     {
         tokenSelected = token;
         interactionState = InteractionState.UsingTokenTarget1;
+        if(interactionStateText != null)
         interactionStateText.text = interactionState.ToString();
         Debug.Log("Started using Token");
     }

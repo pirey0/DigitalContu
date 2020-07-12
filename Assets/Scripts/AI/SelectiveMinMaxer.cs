@@ -4,6 +4,7 @@ using UnityEngine;
 public class SelectiveMinMaxer : GameEvaluator
 {
     private int moveCount = 2;
+
     public SelectiveMinMaxer(int moveCount)
     {
         this.moveCount = moveCount;
@@ -11,10 +12,10 @@ public class SelectiveMinMaxer : GameEvaluator
 
     protected override GameEvalResult InternalEvaluate(ContuGame game, int depth)
     {
-        return SelectiveMinMax(moveCount, game, depth, game.TurnState == TurnState.Player1);
+        return SelectiveMinMax_Rec(moveCount, game, depth, game.TurnState == TurnState.Player1);
     }
 
-    private GameEvalResult SelectiveMinMax(int movesCount, ContuGame game, int depth, bool maximizingPlayer)
+    private GameEvalResult SelectiveMinMax_Rec(int movesCount, ContuGame game, int depth, bool maximizingPlayer)
     {
         if (depth <= 0) // || node is leaf
         {
@@ -23,65 +24,37 @@ public class SelectiveMinMaxer : GameEvaluator
             return res;
         }
 
-        if (maximizingPlayer)
+        float value = maximizingPlayer ? float.MinValue : float.MaxValue;
+        GameEvalResult localRes = null;
+        ContuActionData? action = null;
+        var moves = GetBestMoves(movesCount, game, maximizingPlayer);
+        foreach (var move in moves)
         {
-            float value = float.MinValue;
-            GameEvalResult max = null;
-            ContuActionData? action = null;
-            var moves = GetBestMoves(movesCount, game, maximizingPlayer);
-            foreach (var move in moves)
+            ContuGame subGame = ContuGame.Clone(game);
+            subGame.TryAction(move, false, false);
+            var heur = SelectiveMinMax_Rec(movesCount, subGame, depth - 1, !maximizingPlayer);
+            if (maximizingPlayer ^ heur.Value < value)
             {
-                ContuGame subGame = ContuGame.Clone(game);
-                subGame.TryAction(move, false, false);
-                var heur = SelectiveMinMax(movesCount, subGame, depth - 1, false);
-                if (heur.Value > value)
-                {
-                    value = heur.Value;
-                    max = heur;
-                    action = move;
-                }
+                value = heur.Value;
+                localRes = heur;
+                action = move;
             }
-            if (action == null)
-            {
-                var res = new GameEvalResult();
-                res.Value = boardEvaluator(game.Board);
-                return res;
-            }
-            else
-            {
-                max.Actions.Add(action.Value);
-                return max;
-            }
+        }
+        if (action == null)
+        {
+            var res = new GameEvalResult();
+            res.Value = boardEvaluator(game.Board);
+            if (res.Value > 10000)
+                res.Value -= depth;
+            else if (res.Value < -10000)
+                res.Value += depth;
+
+            return res;
         }
         else
         {
-            float value = float.MaxValue;
-            GameEvalResult min = null;
-            ContuActionData? action = null;
-            var moves = GetBestMoves(movesCount, game, maximizingPlayer);
-            foreach (var move in moves)
-            {
-                ContuGame subGame = ContuGame.Clone(game);
-                subGame.TryAction(move, false, false);
-                var heur = SelectiveMinMax(movesCount, subGame, depth - 1, true);
-                if (heur.Value < value)
-                {
-                    value = heur.Value;
-                    min = heur;
-                    action = move;
-                }
-            }
-            if(action == null)
-            {
-                var res = new GameEvalResult();
-                res.Value = boardEvaluator(game.Board);
-                return res;
-            }
-            else
-            {
-                min.Actions.Add(action.Value);
-                return min;
-            }
+            localRes.Actions.Add(action.Value);
+            return localRes;
         }
     }
 
@@ -107,11 +80,11 @@ public class SelectiveMinMaxer : GameEvaluator
             indexList.Add(i);
         }
 
-        if(max)
-        indexList.Sort((i1, i2) => evals[i1] > evals[i2]? -1 : 1);
+        if (max)
+            indexList.Sort((i1, i2) => evals[i1] > evals[i2] ? -1 : 1);
         else
-        indexList.Sort((i1, i2) => evals[i1] > evals[i2] ? 1 : -1);
-        
+            indexList.Sort((i1, i2) => evals[i1] < evals[i2] ? -1 : 1);
+
         var res = new List<ContuActionData>();
         int locMin = Mathf.Min(data.Count, count);
         for (int i = 0; i < locMin; i++)
@@ -124,7 +97,7 @@ public class SelectiveMinMaxer : GameEvaluator
 
     public override int GetPermutations(int depth)
     {
-        return (int) Mathf.Pow(moveCount, depth);
+        return (int)Mathf.Pow(moveCount, depth);
     }
 
 }

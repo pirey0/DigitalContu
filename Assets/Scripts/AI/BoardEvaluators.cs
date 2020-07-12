@@ -48,11 +48,11 @@ public static class BoardEvaluators
         switch (board.GetBoardState())
         {
             case BoardState.P1Won:
-                score = float.MaxValue;
+                score = 20000;
                 break;
 
             case BoardState.P2Won:
-                score = float.MinValue;
+                score = -20000;
                 break;
         }
 

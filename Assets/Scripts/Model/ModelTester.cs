@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using NaughtyAttributes;
+using System.Text;
+using System.Collections;
 
 public interface IContuGameOwner
 {
@@ -11,9 +13,11 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     [SerializeField] bool createEvaluator;
     [SerializeField] int evaluatorDepth;
     [SerializeField] float playerTime, increment;
+    [SerializeField] bool saveMoves;
+
 
     SpeedContuGame game;
-    IGameEvaluator evaluator;
+    GameEvaluator evaluator;
 
     private void Awake()
     {
@@ -21,7 +25,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
 
         if (createEvaluator)
         {
-            evaluator = new SelectiveMinMaxer(2);
+            evaluator = new AlphaBetaPruning();
             evaluator.Setup(game, BoardEvaluators.DirectionProportionalEvaluation);
         }
     }
@@ -74,14 +78,106 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     }
 
     [Button]
-    private void PlayOutEvaluator()
+    private void PlayOutGame()
     {
-        var r = evaluator.Evaluate(evaluatorDepth);
+        StartCoroutine(PlayGameCoroutine());
+    }
 
-        foreach (var action in r.Actions)
+    [Button]
+    private void PlayGameAsBlack()
+    {
+        StartCoroutine(PlayBlackCoroutine());
+    }
+
+    private IEnumerator PlayBlackCoroutine()
+    {
+        while (true)
         {
-            game.TryAction(action, false, false);
+            if(game.TurnState == TurnState.Player1)
+            {
+                yield return null;
+            }
+            else
+            {
+                yield return null;
+                var r = evaluator.Evaluate(evaluatorDepth, logSpeed: true);
+                Debug.Log("Evaluator Result: " + r.ToString());
+                if (r.Actions.Count > 0)
+                    game.TryAction(r.Actions[0], false, false);
+                else
+                    yield break;
+
+                yield return null;
+            }
         }
+    }
+
+    private IEnumerator PlayGameCoroutine()
+    {
+        while (true)
+        {
+            var r = evaluator.Evaluate(evaluatorDepth, logSpeed: true);
+            Debug.Log("Evaluator Result: " + r.ToString());
+            if (r.Actions.Count > 0)
+                game.TryAction(r.Actions[0], false, false);
+            else
+                yield break;
+
+            yield return null;
+        }
+    }
+
+    [Button]
+    private void PlayOutSingleStep()
+    {
+        var r = evaluator.Evaluate(evaluatorDepth, logSpeed: true);
+        Debug.Log("Evaluator Result: " + r.ToString());
+        if(r.Actions.Count>0)
+            game.TryAction(r.Actions[0], false, false);
+    }
+
+    [Button]
+    private void LogPossibleMoves()
+    {
+        var moves = game.GetPossibleMoves();
+        StringBuilder sb = new StringBuilder();
+        sb.Append("Moves: ");
+        
+        while (moves.MoveNext())
+        {
+            sb.Append(moves.Current.ToString() + ", ");
+        }
+        Debug.Log(sb.ToString());
+    }
+
+    [Button]
+    private void Run1MillionBoardEvals()
+    {
+        var stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
+        for (int i = 0; i < 1000000; i++)
+        {
+            evaluator.BoardEvaluator.Invoke(game.Board);
+        }
+        stopwatch.Stop();
+
+        Debug.Log("1Million Board Eval time: " + stopwatch.ElapsedMilliseconds + "ms");
+    }
+
+    [Button]
+    private void Run1MillionCloning()
+    {
+        var stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
+        for (int i = 0; i < 1000000; i++)
+        {
+            var move = new ContuActionData(0, ActionType.Place, 0, 0);
+            ContuGame subGame = ContuGame.Clone(game);
+            subGame.TryAction(move, false, false);
+        }
+        stopwatch.Stop();
+
+        Debug.Log("1 Million Cloning time: " + stopwatch.ElapsedMilliseconds + "ms");
     }
 
     private ExecutionCheckResult RandomAction(bool log)

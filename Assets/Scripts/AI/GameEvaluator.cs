@@ -15,6 +15,7 @@ public abstract class GameEvaluator : IGameEvaluator
     protected ContuGame game;
     protected System.Func<ContuBoard, float> boardEvaluator;
 
+    public System.Func<ContuBoard, float>  BoardEvaluator { get => boardEvaluator; }
     public void Setup(ContuGame game, Func<ContuBoard, float> func = null)
     {
         this.game = game;
