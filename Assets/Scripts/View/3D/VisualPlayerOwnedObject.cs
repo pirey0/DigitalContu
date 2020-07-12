@@ -44,9 +44,4 @@ public class VisualPlayerOwnedObject : MonoBehaviour
 
         UpdateColor();
     }
-
-    public void Destroy ()
-    {
-        Destroy(gameObject);
-    }
 }

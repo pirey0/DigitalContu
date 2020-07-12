@@ -113,6 +113,7 @@ public class VisualBoard3D : MonoBehaviour
 
     private void UpdateTokenView()
     {
+        /*
         Dictionary<TokenState, int> indexes = new Dictionary<TokenState, int>();
         indexes.Add(TokenState.Free, 0);
         indexes.Add(TokenState.P1Exausted, 0);
@@ -126,6 +127,7 @@ public class VisualBoard3D : MonoBehaviour
             token.transform.position = GetTokenLocation(state, indexes[state]);
             indexes[state] += 1;
         }
+        */
     }
 
     private Vector3 GetTokenLocation(TokenState state, int index)
@@ -237,9 +239,15 @@ public class VisualBoard3D : MonoBehaviour
         Debug.Log("Tried Placing: " + res);
     }
 
-    private int GetPlayerId()
-    {
-        return eventHandler.LocalPlayerId;
+    private int GetPlayerId() {
+        if (ContuConnectionHandler.Instance != null)
+        {
+            return ContuConnectionHandler.Instance.Client.LocalPlayer.ActorNumber - 1;
+        }
+        else
+        {
+            return ((int)game.TurnState);
+        } 
     }
 
     private void SpawnBoard()
