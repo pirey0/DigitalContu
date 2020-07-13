@@ -14,15 +14,19 @@ public class VisualBoard3D : MonoBehaviour
     [SerializeField] ContuNetworkEventHandler eventHandler;
     [SerializeField] ContuConnectionHandler connectionHandler;
 
-    [SerializeField] Transform[] freeLocations, p1Locations, p2Locations, p1ExLocations, p2ExLocations;
+    [SerializeField] RectTransform[] freeLocations, p1Locations, p2Locations, p1ExLocation, p2ExLocation;
+    [SerializeField] Sprite[] tokenSprites;
 
     ContuGame game;
     VisualTile3D[,] visualTiles;
-    VisualToken[] visualTokens;
+
+    [SerializeField]
+    Transform visualToken3DPrefab;
+    VisualToken3D[] visualTokens;
 
     InteractionState interactionState;
 
-    VisualToken tokenSelected;
+    VisualToken3D tokenSelected;
     Vector2Int tokenUse1, tokenUse2;
 
     private void Start()
@@ -113,7 +117,6 @@ public class VisualBoard3D : MonoBehaviour
 
     private void UpdateTokenView()
     {
-        /*
         Dictionary<TokenState, int> indexes = new Dictionary<TokenState, int>();
         indexes.Add(TokenState.Free, 0);
         indexes.Add(TokenState.P1Exausted, 0);
@@ -127,7 +130,6 @@ public class VisualBoard3D : MonoBehaviour
             token.transform.position = GetTokenLocation(state, indexes[state]);
             indexes[state] += 1;
         }
-        */
     }
 
     private Vector3 GetTokenLocation(TokenState state, int index)
@@ -137,9 +139,9 @@ public class VisualBoard3D : MonoBehaviour
             case TokenState.Free:
                 return freeLocations[index].position;
             case TokenState.P1Exausted:
-                return p1ExLocations[index].position;
+                return p1ExLocation[index].position;
             case TokenState.P2Exausted:
-                return p2ExLocations[index].position;
+                return p2ExLocation[index].position;
             case TokenState.P1Owned:
                 return p1Locations[index].position;
             case TokenState.P2Owned:
@@ -170,7 +172,7 @@ public class VisualBoard3D : MonoBehaviour
         }
     }
 
-    private void InteractWithToken(VisualToken token)
+    public void InteractWithToken(VisualToken3D token)
     {
         if(GetPlayerId() != (int)game.TurnState)
         {
@@ -205,7 +207,7 @@ public class VisualBoard3D : MonoBehaviour
         }
     }
 
-    private void StartTokenUsage(VisualToken token)
+    private void StartTokenUsage(VisualToken3D token)
     {
         tokenSelected = token;
         interactionState = InteractionState.UsingTokenTarget1;
@@ -266,16 +268,14 @@ public class VisualBoard3D : MonoBehaviour
 
     private void SpawnTokens()
     {
-        /*
-        visualTokens = new VisualToken[game.Board.TokenCount];
+        visualTokens = new VisualToken3D[game.Board.TokenCount];
 
         for (int i = 0; i < game.Board.TokenCount; i++)
         {
             var t = game.Board.GetToken(i);
-            visualTokens[i] = Instantiate(tokenPrefab).GetComponent<VisualToken>();
-            visualTokens[i].Setup(t, InteractWithToken);
+            visualTokens[i] = Instantiate(visualToken3DPrefab, freeLocations[i]).GetComponent<VisualToken3D>();
+;            visualTokens[i].SetupToken(t,tokenSprites[i], this);
         }
-        */
     }
 
     public enum InteractionState
