@@ -88,8 +88,12 @@ public abstract class GameEvaluator
             cloneAndMoveStopWatch.Start();
 
         var newG = ContuGame.Clone(gameToClone);
-        if (newG.TryAction(data, false, false) != ExecutionCheckResult.Success)
-            UnityEngine.Debug.LogError("AI trying illegal move:" + data.ToString());
+        var res = newG.TryAction(data, false, false);
+        if (res != ExecutionCheckResult.Success)
+        {
+            UnityEngine.Debug.LogWarning("AI trying illegal move: " + res + " " + data.ToString());
+            return null;
+        }
 
         if (measureTime)
             cloneAndMoveStopWatch.Stop();

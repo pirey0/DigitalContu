@@ -110,6 +110,12 @@ public class AlphaBetaPruning : GameEvaluator
                         var subGame = CloneAndMove(current.game, current.moves.Current);
                         inFirst = false;
 
+                        if(subGame == null)
+                        {
+                            Debug.Log(current.ToString());
+                            return null;
+                        }
+
                         //push to stack
                         stack.Push(current);
 
@@ -117,6 +123,7 @@ public class AlphaBetaPruning : GameEvaluator
                         current.game = subGame;
                         current.depth = current.depth - 1;
                         current.maximizingPlayer = !current.maximizingPlayer;
+                        current.moves = null;
 
                         address = 0; //jump to start
                     }
@@ -201,6 +208,11 @@ public class AlphaBetaPruning : GameEvaluator
         public bool maximizingPlayer;
         public IEnumerator<ContuActionData> moves;
         public int depth;
+
+        public override string ToString()
+        {
+            return  depth + "_" + maximizingPlayer + "_" + ((localRes!=null)? localRes.ToString() : "");
+        }
     }
 
 
