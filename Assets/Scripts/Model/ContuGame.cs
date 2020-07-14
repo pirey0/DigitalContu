@@ -50,11 +50,7 @@ public class ContuGame
         var validResult = ActionIsValid(userId, actionType, parameters);
 
         if (validResult != ExecutionCheckResult.Success)
-        {
-            //if(log)
-            //Debug.Log("Invalid Action: " + actionType.ToString());
             return validResult;
-        }
 
         switch (actionType)
         {
@@ -78,6 +74,45 @@ public class ContuGame
             Debug.Log("Action: " + userId + ") " + actionType.ToString());
 
         if(!networkCalled)
+            NetworkActionCall?.Invoke(new ContuActionData(userId, actionType, parameters));
+
+        ActionExecuted?.Invoke(new ContuActionData(userId, actionType, parameters));
+
+        PassTurn();
+        return ExecutionCheckResult.Success;
+    }
+
+    public ExecutionCheckResult TryAction_Unsafe(ContuActionData data, bool log, bool networkCalled)
+    {
+        return TryAction_Unsafe(data.UserId, data.Action, log, networkCalled, data.Parameters);
+    }
+
+    public ExecutionCheckResult TryAction_Unsafe(int userId, ActionType actionType, bool log, bool networkCalled, params int[] parameters)
+    {
+        var validResult = ActionIsValid_Unsafe(userId, actionType, parameters);
+
+        if (validResult != ExecutionCheckResult.Success)
+            return validResult;
+
+        switch (actionType)
+        {
+            case ActionType.Place:
+                Place(userId, parameters[0], parameters[1]);
+                break;
+
+            case ActionType.TakeToken:
+                TakeToken(userId, (TokenType)parameters[0]);
+                break;
+
+            case ActionType.UseToken:
+                TokenEffects.UseToken(board, userId, parameters);
+                var exaused = board.GetFirstTokenOfType((TokenType)parameters[0]).TryChangeState(userId == 0 ? TokenState.P1Exausted : TokenState.P2Exausted);
+                if (!exaused)
+                    Debug.LogError("Could not exaust token");
+                break;
+        }
+
+        if (!networkCalled)
             NetworkActionCall?.Invoke(new ContuActionData(userId, actionType, parameters));
 
         ActionExecuted?.Invoke(new ContuActionData(userId, actionType, parameters));
@@ -130,6 +165,32 @@ public class ContuGame
                 {
                     return ExecutionCheckResult.BadParameters;
                 }
+        }
+
+        return ExecutionCheckResult.BadParameters;
+    }
+
+    public ExecutionCheckResult ActionIsValid_Unsafe(int userId, ActionType action, params int[] parameters)
+    {
+        if (gameFinished)
+            return ExecutionCheckResult.GameEnded;
+
+        if ((int)state != userId)
+            return ExecutionCheckResult.NotYourTurn;
+
+        switch (action)
+        {
+            case ActionType.Place:
+               return board.CanPlaceTile(parameters[0], parameters[1], userId) ? ExecutionCheckResult.Success : ExecutionCheckResult.CannotPlaceThere;
+
+            case ActionType.TakeToken:
+                var token = board.GetFirstTokenOfType((TokenType)parameters[0]);
+                return token.CanChangeStateTo(userId == 0 ? TokenState.P1Owned : TokenState.P2Owned) ? ExecutionCheckResult.Success : ExecutionCheckResult.UnusableToken;
+
+            case ActionType.UseToken:
+
+                token = board.GetFirstTokenOfType((TokenType)parameters[0]);
+                return TokenEffects.CanUseToken(board, userId, parameters) ? ExecutionCheckResult.Success : ExecutionCheckResult.UnusableToken;
         }
 
         return ExecutionCheckResult.BadParameters;
@@ -190,6 +251,7 @@ public class ContuGame
             {
                 yield return attempt;
             }
+            continue;
 
             if (board.GetToken(i).BelongsTo((int)TurnState))
             {

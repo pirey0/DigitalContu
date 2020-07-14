@@ -1,49 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using UnityEngine;
-public interface IGameEvaluator
-{
-    GameEvalResult Evaluate(int depth, bool logSpeed = false);
-    int GetPermutations(int depth);
 
-    void Setup(ContuGame game, System.Func<ContuBoard, float> func = null);
-}
-
-public abstract class GameEvaluator : IGameEvaluator
+public abstract class GameEvaluator
 {
     protected ContuGame game;
-    protected System.Func<ContuBoard, float> boardEvaluator;
-
-    public System.Func<ContuBoard, float>  BoardEvaluator { get => boardEvaluator; }
-    public void Setup(ContuGame game, Func<ContuBoard, float> func = null)
+    private System.Func<ContuBoard, float> boardEvaluator;
+    protected Stopwatch boardEvalStopWatch, cloneAndMoveStopWatch;
+    protected bool measureTime;
+    protected int boardsEvaluated;
+    public void Setup(ContuGame game, Func<ContuBoard, float> func = null, bool measureTime = false)
     {
         this.game = game;
         if(func == null)
             boardEvaluator = BoardEvaluators.NaiveEvaluate;
         else
             boardEvaluator = func;
+
+        this.measureTime = measureTime;
+        if (measureTime)
+        {
+            boardEvalStopWatch = new Stopwatch();
+            cloneAndMoveStopWatch = new Stopwatch();
+        }
     }
 
-    public GameEvalResult Evaluate(int customDepth, bool logSpeed = false)
+    public GameEvalResult Evaluate(int customDepth)
     {
         System.Diagnostics.Stopwatch stopwatch = null;
-        if (logSpeed)
+        if (measureTime)
         {
             stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
+            boardEvalStopWatch.Reset();
+            cloneAndMoveStopWatch.Reset();
+            boardsEvaluated = 0;
         }
 
         var res = InternalEvaluate(game, customDepth);
         res.Actions.Reverse();
 
-        if (logSpeed)
+        if (measureTime)
         {
             stopwatch.Stop();
-            Debug.Log("Evaluate took " + stopwatch.ElapsedMilliseconds.ToString() + "ms ");
+            long tot = stopwatch.ElapsedMilliseconds;
+            LogStopWatch("Total", stopwatch, tot);
+            LogStopWatch("BoardEvals", boardEvalStopWatch, tot);
+            LogStopWatch("CloneAndMoveEval", cloneAndMoveStopWatch, tot);
+            UnityEngine.Debug.Log("Board Evaluation Count: " + boardsEvaluated);
         }
 
         return res;
+    }
+
+    private void LogStopWatch(string name, Stopwatch sw, long total)
+    {
+        UnityEngine.Debug.Log(name + " took " + sw.ElapsedMilliseconds + "ms " + (int)(((double)sw.ElapsedMilliseconds / total) * 100) + "%");
     }
 
     protected abstract GameEvalResult InternalEvaluate(ContuGame game, int depth);
@@ -52,7 +66,34 @@ public abstract class GameEvaluator : IGameEvaluator
     {
         throw new System.NotImplementedException();
     }
+    public float RunBoardEvaluator(ContuBoard board)
+    {
+        if (measureTime)
+        {
+            boardEvalStopWatch.Start();
+            boardsEvaluated++;
+        }
 
+        float res = boardEvaluator.Invoke(board);
+
+        if (measureTime)
+            boardEvalStopWatch.Stop();
+
+        return res;
+    }
+
+    public ContuGame CloneAndMove(ContuGame game, ContuActionData data)
+    {
+        if (measureTime)
+            cloneAndMoveStopWatch.Start();
+
+        var newG = ContuGame.Clone(game);
+        newG.TryAction_Unsafe(data, false, false);
+
+        if (measureTime)
+            cloneAndMoveStopWatch.Stop();
+        return newG;
+    }
 }
 
 public class GameEvalResult

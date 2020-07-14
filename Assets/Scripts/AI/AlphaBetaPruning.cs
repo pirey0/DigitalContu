@@ -16,18 +16,21 @@ public class AlphaBetaPruning : GameEvaluator
         if (depth <= 0) // || node is leaf
         {
             var res = new GameEvalResult();
-            res.Value = boardEvaluator(game.Board);
+            res.Value = RunBoardEvaluator(game.Board);
             return res;
         }
 
         float value = maximizingPlayer ? float.MinValue : float.MaxValue;
         GameEvalResult localRes = null;
         ContuActionData? action = null;
+
         var moves = game.GetPossibleMoves();
-        while(moves.MoveNext())
+
+        while (moves.MoveNext())
         {
-            ContuGame subGame = ContuGame.Clone(game);
-            subGame.TryAction(moves.Current, false, false);
+
+
+            ContuGame subGame = CloneAndMove(game, moves.Current);
             var heur = AlphaBeta_Rec( subGame, depth - 1, alpha, beta, !maximizingPlayer);
             if (maximizingPlayer ^ heur.Value < value)
             {
@@ -48,10 +51,11 @@ public class AlphaBetaPruning : GameEvaluator
                     break;
             }                
         }
+
         if (action == null)
         {
             var res = new GameEvalResult();
-            res.Value = boardEvaluator(game.Board);
+            res.Value = RunBoardEvaluator(game.Board);
             res.Value += res.Value > 0 ? -depth*5 : depth*5;
             return res;
         }
@@ -94,7 +98,7 @@ public class AlphaBetaPruning : GameEvaluator
                         int tempAddress = (int)stack.Pop();
 
                         var res = new GameEvalResult();
-                        res.Value = boardEvaluator(tempGame.Board);
+                        res.Value = RunBoardEvaluator(tempGame.Board);
                         stack.Push(tempGame);
                         stack.Push(tempDepth);
                         stack.Push(tempAlpha);

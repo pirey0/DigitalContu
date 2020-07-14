@@ -20,7 +20,7 @@ public class SelectiveMinMaxer : GameEvaluator
         if (depth <= 0) // || node is leaf
         {
             var res = new GameEvalResult();
-            res.Value = boardEvaluator(game.Board);
+            res.Value = RunBoardEvaluator(game.Board);
             return res;
         }
 
@@ -43,7 +43,7 @@ public class SelectiveMinMaxer : GameEvaluator
         if (action == null)
         {
             var res = new GameEvalResult();
-            res.Value = boardEvaluator(game.Board);
+            res.Value = RunBoardEvaluator(game.Board);
             if (res.Value > 10000)
                 res.Value -= depth;
             else if (res.Value < -10000)
@@ -70,7 +70,7 @@ public class SelectiveMinMaxer : GameEvaluator
 
             ContuGame subGame = ContuGame.Clone(game);
             subGame.TryAction(enumerator.Current, false, false);
-            evals.Add(boardEvaluator.Invoke(subGame.Board));
+            evals.Add(RunBoardEvaluator(subGame.Board));
         }
 
         var indexList = new List<int>();

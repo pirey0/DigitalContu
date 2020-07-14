@@ -26,7 +26,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         if (createEvaluator)
         {
             evaluator = new AlphaBetaPruning();
-            evaluator.Setup(game, BoardEvaluators.DirectionProportionalEvaluation);
+            evaluator.Setup(game, BoardEvaluators.DirectionProportionalEvaluation, measureTime: true);
         }
     }
 
@@ -66,7 +66,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     {
         if(evaluator != null)
         {
-            Debug.Log("Evaluator Result: " + evaluator.Evaluate(evaluatorDepth, logSpeed: true).ToString());
+            Debug.Log("Evaluator Result: " + evaluator.Evaluate(evaluatorDepth).ToString());
         }
     }
 
@@ -100,7 +100,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
             else
             {
                 yield return null;
-                var r = evaluator.Evaluate(evaluatorDepth, logSpeed: true);
+                var r = evaluator.Evaluate(evaluatorDepth);
                 Debug.Log("Evaluator Result: " + r.ToString());
                 if (r.Actions.Count > 0)
                     game.TryAction(r.Actions[0], false, false);
@@ -116,21 +116,21 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     {
         while (true)
         {
-            var r = evaluator.Evaluate(evaluatorDepth, logSpeed: true);
+            var r = evaluator.Evaluate(evaluatorDepth);
             Debug.Log("Evaluator Result: " + r.ToString());
             if (r.Actions.Count > 0)
                 game.TryAction(r.Actions[0], false, false);
             else
                 yield break;
 
-            yield return null;
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
     [Button]
     private void PlayOutSingleStep()
     {
-        var r = evaluator.Evaluate(evaluatorDepth, logSpeed: true);
+        var r = evaluator.Evaluate(evaluatorDepth);
         Debug.Log("Evaluator Result: " + r.ToString());
         if(r.Actions.Count>0)
             game.TryAction(r.Actions[0], false, false);
@@ -157,7 +157,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         stopwatch.Start();
         for (int i = 0; i < 1000000; i++)
         {
-            evaluator.BoardEvaluator.Invoke(game.Board);
+            evaluator.RunBoardEvaluator(game.Board);
         }
         stopwatch.Stop();
 

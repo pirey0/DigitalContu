@@ -26,7 +26,7 @@ public class ContuMinMaxer : GameEvaluator
         if (depth <= 0) // || node is leaf
         {
             var res = new GameEvalResult();
-            res.Value = boardEvaluator(game.Board);
+            res.Value = RunBoardEvaluator(game.Board);
             return res;
         }
 
