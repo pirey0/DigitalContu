@@ -80,9 +80,9 @@ public class AlphaBetaPruning : GameEvaluator
         current.depth = in_depth;
 
         int address = 0;
-        stack.Push(current);
+        bool inFirst = true;
 
-        while (stack.Count > 0)
+        while (stack.Count > 0 || inFirst)
         {
             switch (address)
             {
@@ -108,6 +108,7 @@ public class AlphaBetaPruning : GameEvaluator
                     if (current.moves.MoveNext())
                     {
                         var subGame = CloneAndMove(current.game, current.moves.Current);
+                        inFirst = false;
 
                         //push to stack
                         stack.Push(current);
@@ -144,6 +145,7 @@ public class AlphaBetaPruning : GameEvaluator
                             current.action = current.moves.Current;
                         }
                     }
+
                     if (current.maximizingPlayer)
                     {
                         current.alpha = Mathf.Max(current.alpha, current.value);
@@ -167,8 +169,9 @@ public class AlphaBetaPruning : GameEvaluator
                     break;
 
                 case 2: //else
-                    if (current.action == null)
+                    if (current.action == null) 
                     {
+                        Debug.Log("Out of moves");
                         float val = RunBoardEvaluator(game.Board);
                         returnValue = new GameEvalResult(val + val > 0 ? -current.depth * 5 : current.depth * 5);
                         address = 1; //jump to return;

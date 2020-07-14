@@ -82,13 +82,14 @@ public abstract class GameEvaluator
         return res;
     }
 
-    public ContuGame CloneAndMove(ContuGame game, ContuActionData data)
+    public ContuGame CloneAndMove(ContuGame gameToClone, ContuActionData data)
     {
         if (measureTime)
             cloneAndMoveStopWatch.Start();
 
-        var newG = ContuGame.Clone(game);
-        newG.TryAction_Unsafe(data, false, false);
+        var newG = ContuGame.Clone(gameToClone);
+        if (newG.TryAction(data, false, false) != ExecutionCheckResult.Success)
+            UnityEngine.Debug.LogError("AI trying illegal move:" + data.ToString());
 
         if (measureTime)
             cloneAndMoveStopWatch.Stop();
