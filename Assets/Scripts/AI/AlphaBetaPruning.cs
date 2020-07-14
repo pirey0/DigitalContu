@@ -15,6 +15,7 @@ public class AlphaBetaPruning : GameEvaluator
     //https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
     private GameEvalResult AlphaBeta_Rec(ContuGame game, int depth, float alpha, float beta, bool maximizingPlayer)
     {
+        //0
         if (depth <= 0) // || node is leaf
         {
             var res = new GameEvalResult();
@@ -28,10 +29,13 @@ public class AlphaBetaPruning : GameEvaluator
 
         var moves = game.GetPossibleMoves();
 
+        //5
         while (moves.MoveNext())
         {
             ContuGame subGame = CloneAndMove(game, moves.Current);
             var heur = AlphaBeta_Rec(subGame, depth - 1, alpha, beta, !maximizingPlayer);
+
+            //1
             if (maximizingPlayer ^ heur.Value < value)
             {
                 value = heur.Value;
@@ -52,6 +56,7 @@ public class AlphaBetaPruning : GameEvaluator
             }
         }
 
+        //2
         if (action == null)
         {
             var res = new GameEvalResult();
@@ -100,17 +105,21 @@ public class AlphaBetaPruning : GameEvaluator
                     current.action = null;
                     current.moves = game.GetPossibleMoves();
 
+                    stack.Push(current);
                     address = 5; //jump to loopIter
+                    inFirst = false;
                     break;
 
 
                 case 5: //loopIter
+
+                    current = stack.Pop();
+
                     if (current.moves.MoveNext())
                     {
                         var subGame = CloneAndMove(current.game, current.moves.Current);
-                        inFirst = false;
 
-                        if(subGame == null)
+                        if(subGame == null) //Should not happen
                         {
                             Debug.Log(current.ToString());
                             return null;
@@ -129,6 +138,7 @@ public class AlphaBetaPruning : GameEvaluator
                     }
                     else
                     {
+                        stack.Push(current);
                         address = 2; //jump to else
                     }
                     break;
@@ -172,6 +182,7 @@ public class AlphaBetaPruning : GameEvaluator
                         }
                     }
 
+                    stack.Push(current);
                     address = 5; //jump to loop iter
                     break;
 
