@@ -107,6 +107,12 @@ public class GameEvalResult
         Actions = new List<ContuActionData>();
     }
 
+    public GameEvalResult(float value)
+    {
+        Value = value;
+        Actions = new List<ContuActionData>();
+    }
+
     public override string ToString()
     {
         StringBuilder sb = new StringBuilder();

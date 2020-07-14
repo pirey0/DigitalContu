@@ -251,7 +251,6 @@ public class ContuGame
             {
                 yield return attempt;
             }
-            continue;
 
             if (board.GetToken(i).BelongsTo((int)TurnState))
             {

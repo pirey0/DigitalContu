@@ -7,11 +7,13 @@ public class AlphaBetaPruning : GameEvaluator
 {
     protected override GameEvalResult InternalEvaluate(ContuGame game, int depth)
     {
-        return AlphaBeta_Rec(game, depth, float.NegativeInfinity, float.PositiveInfinity, game.TurnState == TurnState.Player1);
+            return AlphaBeta_Iter(game, depth);
+            return AlphaBeta_Rec(game, depth, float.NegativeInfinity, float.PositiveInfinity, game.TurnState == TurnState.Player1);
+
     }
 
     //https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
-    private GameEvalResult AlphaBeta_Rec( ContuGame game, int depth, float alpha, float beta, bool maximizingPlayer)
+    private GameEvalResult AlphaBeta_Rec(ContuGame game, int depth, float alpha, float beta, bool maximizingPlayer)
     {
         if (depth <= 0) // || node is leaf
         {
@@ -28,10 +30,8 @@ public class AlphaBetaPruning : GameEvaluator
 
         while (moves.MoveNext())
         {
-
-
             ContuGame subGame = CloneAndMove(game, moves.Current);
-            var heur = AlphaBeta_Rec( subGame, depth - 1, alpha, beta, !maximizingPlayer);
+            var heur = AlphaBeta_Rec(subGame, depth - 1, alpha, beta, !maximizingPlayer);
             if (maximizingPlayer ^ heur.Value < value)
             {
                 value = heur.Value;
@@ -49,14 +49,14 @@ public class AlphaBetaPruning : GameEvaluator
                 beta = Mathf.Min(beta, value);
                 if (beta <= alpha)
                     break;
-            }                
+            }
         }
 
         if (action == null)
         {
             var res = new GameEvalResult();
             res.Value = RunBoardEvaluator(game.Board);
-            res.Value += res.Value > 0 ? -depth*5 : depth*5;
+            res.Value += res.Value > 0 ? -depth * 5 : depth * 5;
             return res;
         }
         else
@@ -66,134 +66,139 @@ public class AlphaBetaPruning : GameEvaluator
         }
     }
 
-    private GameEvalResult AlphaBeta_Iter(ContuGame game, int depth, float alpha, float beta, bool maximizingPlayer)
+    //https://stackoverflow.com/questions/40027002/how-to-convert-recursion-to-iteration
+    private GameEvalResult AlphaBeta_Iter(ContuGame in_game, int in_depth)
     {
-        Stack<object> stack = new Stack<object>();
+        Stack<IterationData> stack = new Stack<IterationData>();
+        GameEvalResult returnValue = null;
 
-        stack.Push(10); //inital return address
-        stack.Push(game);
-        stack.Push(depth);
-        stack.Push(alpha);
-        stack.Push(beta);
-        stack.Push(maximizingPlayer);
-        stack.Push(null);
-        stack.Push(1); //start call
+        IterationData current = new IterationData();
+        current.alpha = float.NegativeInfinity;
+        current.beta = float.PositiveInfinity;
+        current.maximizingPlayer = game.TurnState == TurnState.Player1;
+        current.game = in_game;
+        current.depth = in_depth;
+
+        int address = 0;
+        stack.Push(current);
 
         while (stack.Count > 0)
         {
-            int address = (int)stack.Pop();
-
             switch (address)
             {
-                case 1:
-                    GameEvalResult lastRes = (GameEvalResult)stack.Pop();
-                    bool tempMaximizing = (bool)stack.Pop();
-                    float tempBeta = (float)stack.Pop();
-                    float tempAlpha = (float)stack.Pop();
-                    int tempDepth = (int)stack.Pop();
-                    ContuGame tempGame = (ContuGame)stack.Pop();
+                case 0: //start
 
-                    if (tempDepth <= 0)
+                    if (current.depth <= 0)
                     {
-                        int tempAddress = (int)stack.Pop();
-
-                        var res = new GameEvalResult();
-                        res.Value = RunBoardEvaluator(tempGame.Board);
-                        stack.Push(tempGame);
-                        stack.Push(tempDepth);
-                        stack.Push(tempAlpha);
-                        stack.Push(tempBeta);
-                        stack.Push(!tempMaximizing);
-                        stack.Push(res);
-                        stack.Push(tempAddress);
-                        continue;
+                        returnValue = new GameEvalResult(RunBoardEvaluator(current.game.Board));
+                        address = 1; //jump to return;
+                        break;
                     }
 
-                    var moves = game.GetPossibleMoves();
+                    current.value = current.maximizingPlayer ? float.MinValue : float.MaxValue;
+                    current.localRes = null;
+                    current.action = null;
+                    current.moves = game.GetPossibleMoves();
 
-                    stack.Push(moves);
-                    stack.Push(tempMaximizing ? float.MinValue : float.MaxValue);
-                    stack.Push(tempGame);
-                    stack.Push(tempDepth - 1);
-                    stack.Push(tempAlpha);
-                    stack.Push(tempBeta);
-                    stack.Push(!tempMaximizing);
-                    stack.Push(lastRes);
-                    stack.Push(6); //broken loop
+                    address = 5; //jump to loopIter
                     break;
 
-                case 6:
-                    lastRes = (GameEvalResult)stack.Pop();
-                    tempMaximizing = (bool)stack.Pop();
-                    tempBeta = (float)stack.Pop();
-                    tempAlpha = (float)stack.Pop();
-                    tempDepth = (int)stack.Pop();
-                    tempGame = (ContuGame)stack.Pop();
-                    float tempValue = (float)stack.Pop();
-                    moves = (IEnumerator<ContuActionData>)stack.Pop();
 
-                    bool skip = false;
-
-                    if (tempMaximizing)
+                case 5: //loopIter
+                    if (current.moves.MoveNext())
                     {
-                        tempAlpha = Mathf.Max(tempAlpha, tempValue);
-                        if (tempAlpha >= tempBeta)
+                        var subGame = CloneAndMove(current.game, current.moves.Current);
+
+                        //push to stack
+                        stack.Push(current);
+
+                        //reset parameters
+                        current.game = subGame;
+                        current.depth = current.depth - 1;
+                        current.maximizingPlayer = !current.maximizingPlayer;
+
+                        address = 0; //jump to start
+                    }
+                    else
+                    {
+                        address = 2; //jump to else
+                    }
+                    break;
+
+                case 1: // return
+
+                    current = stack.Pop();
+                    current.heur = returnValue;
+
+                    if (current.maximizingPlayer ^ current.heur.Value < current.value)
+                    {
+                        current.value = current.heur.Value;
+                        current.localRes = current.heur;
+
+                        if(current.moves == null)
                         {
-                            skip = true;
+                            //?? no clue how i get here
+                        }
+                        else
+                        {
+                            current.action = current.moves.Current;
+                        }
+                    }
+                    if (current.maximizingPlayer)
+                    {
+                        current.alpha = Mathf.Max(current.alpha, current.value);
+                        if (current.alpha >= current.beta)
+                        {
+                            address = 2;
+                            break;
                         }
                     }
                     else
                     {
-                        tempBeta = Mathf.Min(tempBeta, tempValue);
-                        if (tempBeta <= tempAlpha)
+                        current.beta = Mathf.Min(current.beta, current.value);
+                        if (current.beta <= current.alpha)
                         {
-                            skip = true;
+                            address = 2;
+                            break;
                         }
                     }
 
-                    if (moves.MoveNext() && !skip)
-                    {
-                        if (lastRes != null)
-                        {
-                            if (tempMaximizing ^ lastRes.Value < tempValue)
-                            {
-                                tempValue = lastRes.Value;
-                            }      
-                        }
+                    address = 5; //jump to loop iter
+                    break;
 
-                        ContuGame subGame = ContuGame.Clone(tempGame);
-                        subGame.TryAction(moves.Current, false, false);
-                        
-                        stack.Push(moves);
-                        stack.Push(tempValue);
-                        stack.Push(6); //return adress
-                        stack.Push(subGame);
-                        stack.Push(tempDepth);
-                        stack.Push(tempAlpha);
-                        stack.Push(tempBeta);
-                        stack.Push(tempMaximizing);
-                        stack.Push(lastRes);
-                        stack.Push(1); //call address;
+                case 2: //else
+                    if (current.action == null)
+                    {
+                        float val = RunBoardEvaluator(game.Board);
+                        returnValue = new GameEvalResult(val + val > 0 ? -current.depth * 5 : current.depth * 5);
+                        address = 1; //jump to return;
                     }
                     else
                     {
-                        int tempAddress = (int)stack.Pop();
-                        stack.Push(tempGame);
-                        stack.Push(tempDepth);
-                        stack.Push(tempAlpha);
-                        stack.Push(tempBeta);
-                        stack.Push(tempMaximizing);
-                        stack.Push(lastRes);
-                        stack.Push(tempAddress);
+                        current.localRes.Actions.Add(current.action.Value);
+                        returnValue = current.localRes;
+                        address = 1; //jump to return;
                     }
                     break;
-
-                case 10: //final return
-                    GameEvalResult output = (GameEvalResult)stack.Pop();
-                    return output;
             }
         }
 
-        return null;
+        return returnValue;
     }
+
+    struct IterationData
+    {
+        public ContuGame game;
+        public float value;
+        public GameEvalResult localRes;
+        public ContuActionData? action;
+        public GameEvalResult heur;
+        public float alpha;
+        public float beta;
+        public bool maximizingPlayer;
+        public IEnumerator<ContuActionData> moves;
+        public int depth;
+    }
+
+
 }
