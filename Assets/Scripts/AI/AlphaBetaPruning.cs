@@ -16,18 +16,16 @@ public class AlphaBetaPruning : GameEvaluator
         //0
         if (depth <= 0) // || node is leaf
         {
-            var res = new GameEvalResult();
-            res.Value = RunBoardEvaluator(game);
-            return res;
+            return new GameEvalResult(RunBoardEvaluator(game));
         }
 
         var lookup = stateTable.Get(game, depth);
-
         if (lookup != null)
-            return lookup;
+            return lookup.Value;
+        
 
         float value = maximizingPlayer ? float.MinValue : float.MaxValue;
-        GameEvalResult localRes = null;
+        GameEvalResult localRes = default;
         ContuActionData? action = null;
 
         var moves = game.GetPossibleMoves();
@@ -70,7 +68,7 @@ public class AlphaBetaPruning : GameEvaluator
         }
         else
         {
-            localRes.Actions.Add(action.Value);
+            localRes.AddAction(action.Value);
             stateTable.TryAdd(game, depth, localRes);
             return localRes;
         }
@@ -80,7 +78,7 @@ public class AlphaBetaPruning : GameEvaluator
     private GameEvalResult AlphaBeta_Iter(ContuGame in_game, int in_depth)
     {
         Stack<IterationData> stack = new Stack<IterationData>();
-        GameEvalResult returnValue = null;
+        GameEvalResult returnValue = default;
 
         IterationData current = new IterationData();
         current.alpha = float.NegativeInfinity;
@@ -106,7 +104,7 @@ public class AlphaBetaPruning : GameEvaluator
                     }
 
                     current.value = current.maximizingPlayer ? float.MinValue : float.MaxValue;
-                    current.localRes = null;
+                    current.localRes = default(GameEvalResult);
                     current.action = null;
                     current.moves = game.GetPossibleMoves();
 
@@ -127,7 +125,7 @@ public class AlphaBetaPruning : GameEvaluator
                         if(subGame == null) //Should not happen
                         {
                             Debug.Log(current.ToString());
-                            return null;
+                            return default(GameEvalResult);
                         }
 
                         //push to stack
@@ -201,7 +199,7 @@ public class AlphaBetaPruning : GameEvaluator
                     }
                     else
                     {
-                        current.localRes.Actions.Add(current.action.Value);
+                        current.localRes.AddAction(current.action.Value);
                         returnValue = current.localRes;
                         address = 1; //jump to return;
                     }
@@ -227,7 +225,7 @@ public class AlphaBetaPruning : GameEvaluator
 
         public override string ToString()
         {
-            return  depth + "_" + maximizingPlayer + "_" + ((localRes!=null)? localRes.ToString() : "");
+            return  depth + "_" + maximizingPlayer + "_" + ((localRes.HasAction)? localRes.ToString() : "");
         }
     }
 

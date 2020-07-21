@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -47,7 +48,7 @@ public abstract class GameEvaluator
         }
 
         var res = InternalEvaluate(game, customDepth);
-        res.Actions.Reverse();
+        
 
         if (measureTime)
         {
@@ -87,7 +88,7 @@ public abstract class GameEvaluator
 
         if (tabRes != null)
         {
-            res = tabRes.Value;
+            res = tabRes.Value.Value;
         }
         else
         {
@@ -120,34 +121,45 @@ public abstract class GameEvaluator
     }
 }
 
-public class GameEvalResult
+public struct GameEvalResult
 {
     public float Value;
-    public List<ContuActionData> Actions;
+    public string ActionSequence;
 
-    public GameEvalResult()
+    public bool HasAction { get { return ActionSequence != null && ActionSequence.Length > 0; } }
+
+    public ContuActionData GetAction()
     {
-        Value = 0;
-        Actions = new List<ContuActionData>();
+        if (!HasAction)
+            return default;
+
+        return ContuActionData.FromByteArray(StringToByteArray(ActionSequence));
+    }
+
+    private static byte[] StringToByteArray(string hex)
+    {
+        return Enumerable.Range(0, hex.Length)
+                         .Where(x => x % 2 == 0)
+                         .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                         .ToArray();
+    }
+
+
+
+    public void AddAction(ContuActionData action)
+    {
+        ActionSequence = action.ToByteString() + ActionSequence;
     }
 
     public GameEvalResult(float value)
     {
         Value = value;
-        Actions = new List<ContuActionData>();
+        ActionSequence = "";
     }
 
     public override string ToString()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("Eval: " + Value + " -> ");
-
-        foreach (var a in Actions)
-        {
-            sb.Append(", " + a.ToString());
-        }
-
-        return sb.ToString();
+        return ("Eval: " + Value + " -> " + ActionSequence);
     }
 }
 
@@ -165,15 +177,16 @@ public class StateTableData
 
 public class StateHashTable
 {
-    private Hashtable table;
+    private Dictionary<string, StateTableData>  table;
     int useCount;
 
     public int Count { get => useCount; }
 
     public StateHashTable()
     {
-        table = new Hashtable();
+        table = new Dictionary<string, StateTableData>();
         useCount = 0;
+
     }
 
     public void ResetCount()
@@ -181,13 +194,13 @@ public class StateHashTable
         useCount = 0;
     }
 
-    public GameEvalResult Get(ContuGame game, int minDepth =0)
+    public GameEvalResult? Get(ContuGame game, int minDepth =0)
     {
         string str = game.NormalAsString();
 
         if (table.ContainsKey(str))
         {
-            var res = (StateTableData) table[str];
+            var res = table[str];
 
             if (res.Depth >= minDepth)
             {
@@ -209,7 +222,7 @@ public class StateHashTable
 
         if (table.ContainsKey(str))
         {
-            var res = (StateTableData)table[str];
+            var res = table[str];
 
             if (res.Depth < depth)
                 table[str] = new StateTableData(depth, eval);

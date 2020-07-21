@@ -25,7 +25,7 @@ public class SelectiveMinMaxer : GameEvaluator
         }
 
         float value = maximizingPlayer ? float.MinValue : float.MaxValue;
-        GameEvalResult localRes = null;
+        GameEvalResult localRes = default;
         ContuActionData? action = null;
         var moves = GetBestMoves(movesCount, game, maximizingPlayer);
         foreach (var move in moves)
@@ -53,7 +53,7 @@ public class SelectiveMinMaxer : GameEvaluator
         }
         else
         {
-            localRes.Actions.Add(action.Value);
+            localRes.AddAction(action.Value);
             return localRes;
         }
     }

@@ -102,8 +102,8 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
                 yield return null;
                 var r = evaluator.Evaluate(evaluatorDepth);
                 Debug.Log("Evaluator Result: " + r.ToString());
-                if (r.Actions.Count > 0)
-                    game.TryAction(r.Actions[0], false, false);
+                if (r.HasAction)
+                    game.TryAction(r.GetAction(), false, false);
                 else
                     yield break;
 
@@ -118,8 +118,8 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         {
             var r = evaluator.Evaluate(evaluatorDepth);
             Debug.Log("Evaluator Result: " + r.ToString());
-            if (r.Actions.Count > 0)
-                game.TryAction(r.Actions[0], false, false);
+            if (r.HasAction)
+                game.TryAction(r.GetAction(), false, false);
             else
                 yield break;
 
@@ -132,8 +132,8 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     {
         var r = evaluator.Evaluate(evaluatorDepth);
         Debug.Log("Evaluator Result: " + r.ToString());
-        if(r.Actions.Count>0)
-            game.TryAction(r.Actions[0], false, false);
+        if (r.HasAction)
+            game.TryAction(r.GetAction(), false, false);
     }
 
     [Button]

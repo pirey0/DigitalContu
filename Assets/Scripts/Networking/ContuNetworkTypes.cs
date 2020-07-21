@@ -26,7 +26,7 @@ public struct ContuActionData
 
     public byte[] ToByteArray()
     {
-        byte[] data = new byte[2 + Parameters.Length];
+        byte[] data = new byte[7];
         data[0] = (byte)UserId;
         data[1] = (byte)Action;
 
@@ -42,7 +42,7 @@ public struct ContuActionData
     {
         int userId = data[0];
         ActionType actionType = (ActionType)data[1];
-        int[] parameters = new int[data.Length - 2];
+        int[] parameters = new int[5];
 
         for (int i = 0; i < parameters.Length; i++)
         {
@@ -50,6 +50,11 @@ public struct ContuActionData
         }
 
         return new ContuActionData(userId, actionType, parameters);
+    }
+
+    public string ToByteString()
+    {
+        return System.BitConverter.ToString(ToByteArray()).Replace("-", "");
     }
 
     public override string ToString()

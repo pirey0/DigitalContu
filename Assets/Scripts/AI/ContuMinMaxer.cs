@@ -33,7 +33,7 @@ public class ContuMinMaxer : GameEvaluator
         if (maximizingPlayer)
         {
             float value = float.MinValue;
-            GameEvalResult max = null;
+            GameEvalResult max = default(GameEvalResult);
             ContuActionData? action = null;
             var enumerator = game.GetPossibleMoves();
             while(enumerator.MoveNext())
@@ -48,13 +48,13 @@ public class ContuMinMaxer : GameEvaluator
                     action = enumerator.Current;
                 }
             }
-            max.Actions.Add(action.Value);
+            max.AddAction(action.Value);
             return max;
         }
         else
         {
             float value = float.MaxValue;
-            GameEvalResult min = null;
+            GameEvalResult min = default;
             ContuActionData? action = null;
             var enumerator = game.GetPossibleMoves();
             while (enumerator.MoveNext())
@@ -69,7 +69,7 @@ public class ContuMinMaxer : GameEvaluator
                     action = enumerator.Current;
                 }
             }
-            min.Actions.Add(action.Value);
+            min.AddAction(action.Value);
             return min;
         }
     }
