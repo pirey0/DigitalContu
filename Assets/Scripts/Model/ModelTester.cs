@@ -89,6 +89,12 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         StartCoroutine(PlayBlackCoroutine());
     }
 
+    [Button]
+    private void Play20Moves()
+    {
+        StartCoroutine(Play20MovesCoroutine());
+    }
+
     private IEnumerator PlayBlackCoroutine()
     {
         while (true)
@@ -115,6 +121,21 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     private IEnumerator PlayGameCoroutine()
     {
         while (true)
+        {
+            var r = evaluator.Evaluate(evaluatorDepth);
+            Debug.Log("Evaluator Result: " + r.ToString());
+            if (r.HasAction)
+                game.TryAction(r.GetAction(), false, false);
+            else
+                yield break;
+
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private IEnumerator Play20MovesCoroutine()
+    {
+        for (int i = 0; i <20; i++)
         {
             var r = evaluator.Evaluate(evaluatorDepth);
             Debug.Log("Evaluator Result: " + r.ToString());
@@ -184,6 +205,12 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
     private void LogBoardToString()
     {
         UnityEngine.Debug.Log(game.Board.NormalAsString());
+    }
+
+    [Button]
+    private void SaveStateTable()
+    {
+        evaluator.SaveStateTable();
     }
 
     private ExecutionCheckResult RandomAction(bool log)

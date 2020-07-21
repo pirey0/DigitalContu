@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -31,7 +32,7 @@ public abstract class GameEvaluator
             cloneAndMoveStopWatch = new Stopwatch();
         }
 
-        stateTable = new StateHashTable();
+        stateTable = new StateHashTable(load: false);
     }
 
     public GameEvalResult Evaluate(int customDepth)
@@ -119,6 +120,11 @@ public abstract class GameEvaluator
             cloneAndMoveStopWatch.Stop();
         return newG;
     }
+
+    internal void SaveStateTable()
+    {
+        stateTable.SaveToFile();
+    }
 }
 
 public struct GameEvalResult
@@ -159,7 +165,16 @@ public struct GameEvalResult
 
     public override string ToString()
     {
-        return ("Eval: " + Value + " -> " + ActionSequence);
+        return ( Value + ">" + ActionSequence);
+    }
+
+    internal static GameEvalResult FromString(string seq)
+    {
+        var split = seq.Split('>');
+        float val = float.Parse(split[0]);
+        var res = new GameEvalResult(val);
+        res.ActionSequence = split[1];
+        return res;
     }
 }
 
@@ -173,6 +188,11 @@ public class StateTableData
         Depth = depth;
         Eval = eval;
     }
+
+    public override string ToString()
+    {
+        return Depth + " " + Eval.ToString();
+    }
 }
 
 public class StateHashTable
@@ -180,13 +200,66 @@ public class StateHashTable
     private Dictionary<string, StateTableData>  table;
     int useCount;
 
+    private static string path = "Assets/Resources/stateTable.txt";
+
     public int Count { get => useCount; }
 
-    public StateHashTable()
+    public StateHashTable(bool load = true)
     {
         table = new Dictionary<string, StateTableData>();
         useCount = 0;
 
+        if (load)
+        {
+            LoadFromFile();
+        }
+    }
+
+    public void SaveToFile()
+    {
+        //Write some text to the test.txt file
+        StreamWriter writer = new StreamWriter(path, false);
+        foreach (var item in table)
+        {
+            writer.WriteLine(item.Key.ToString() + " " + item.Value.ToString());
+        }
+        writer.Close();
+
+        UnityEngine.Debug.Log("Saved " + table.Count + " entries.");
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(Resources.Load("stateTable"));
+#endif  
+    }
+
+    private void LoadFromFile()
+    {
+        UnityEngine.Debug.Log("Loading from file...");
+        StreamReader reader = new StreamReader(path);
+
+        string l = reader.ReadLine();
+
+        do
+        {
+            AddFromString(l);
+            l = reader.ReadLine();
+        }
+        while (l != null && l.Length > 0);
+
+        reader.Close();
+        UnityEngine.Debug.Log("Loaded " + table.Count + " entries.");
+       
+    }
+
+    private void AddFromString(string s)
+    {
+        var splits = s.Split(' ');
+
+        string key = splits[0];
+        int depth = int.Parse(splits[1]);
+        string seq = splits[2];
+
+        table.Add(key, new StateTableData(depth, GameEvalResult.FromString(seq)));
     }
 
     public void ResetCount()
