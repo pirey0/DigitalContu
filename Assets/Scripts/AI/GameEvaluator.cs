@@ -85,14 +85,14 @@ public abstract class GameEvaluator
         float res = 0;
         var tabRes = stateTable.Get(locGame);
 
-        if (tabRes.HasValue)
+        if (tabRes != null)
         {
             res = tabRes.Value;
         }
         else
         {
             res = boardEvaluator.Invoke(locGame.Board);
-            stateTable.TryAdd(locGame, 0, res);
+            stateTable.TryAdd(locGame, 0, new GameEvalResult(res));
         }
 
         if (measureTime)
@@ -154,9 +154,9 @@ public class GameEvalResult
 public class StateTableData
 {
     public int Depth;
-    public float Eval;
+    public GameEvalResult Eval;
 
-    public StateTableData(int depth, float eval)
+    public StateTableData(int depth, GameEvalResult eval)
     {
         Depth = depth;
         Eval = eval;
@@ -181,7 +181,7 @@ public class StateHashTable
         useCount = 0;
     }
 
-    public float? Get(ContuGame game, int minDepth =0)
+    public GameEvalResult Get(ContuGame game, int minDepth =0)
     {
         string str = game.NormalAsString();
 
@@ -203,7 +203,7 @@ public class StateHashTable
         }
     }
 
-    public void TryAdd(ContuGame game, int depth, float eval)
+    public void TryAdd(ContuGame game, int depth, GameEvalResult eval)
     {
         string str = game.NormalAsString();
 

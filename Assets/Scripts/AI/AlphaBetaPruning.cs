@@ -21,6 +21,10 @@ public class AlphaBetaPruning : GameEvaluator
             return res;
         }
 
+        var lookup = stateTable.Get(game, depth);
+
+        if (lookup != null)
+            return lookup;
 
         float value = maximizingPlayer ? float.MinValue : float.MaxValue;
         GameEvalResult localRes = null;
@@ -61,11 +65,13 @@ public class AlphaBetaPruning : GameEvaluator
             var res = new GameEvalResult();
             res.Value = RunBoardEvaluator(game);
             res.Value += res.Value > 0 ? -depth * 5 : depth * 5;
+            stateTable.TryAdd(game, depth, res);
             return res;
         }
         else
         {
             localRes.Actions.Add(action.Value);
+            stateTable.TryAdd(game, depth, localRes);
             return localRes;
         }
     }
