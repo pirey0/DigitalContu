@@ -157,7 +157,7 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         stopwatch.Start();
         for (int i = 0; i < 1000000; i++)
         {
-            evaluator.RunBoardEvaluator(game.Board);
+            evaluator.RunBoardEvaluator(game);
         }
         stopwatch.Stop();
 
@@ -178,6 +178,12 @@ public class ModelTester : MonoBehaviour, IContuGameOwner
         stopwatch.Stop();
 
         Debug.Log("1 Million Cloning time: " + stopwatch.ElapsedMilliseconds + "ms");
+    }
+
+    [Button]
+    private void LogBoardToString()
+    {
+        UnityEngine.Debug.Log(game.Board.NormalAsString());
     }
 
     private ExecutionCheckResult RandomAction(bool log)

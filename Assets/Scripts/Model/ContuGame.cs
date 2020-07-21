@@ -240,6 +240,15 @@ public class ContuGame
         BoardStateChanged?.Invoke(endingState);
     }
 
+    public ContuActionData[] GetPossibleMovesArr()
+    {
+        var enumerator = GetPossibleMoves();
+        var list = new List<ContuActionData>();
+        while (enumerator.MoveNext())
+            list.Add(enumerator.Current);
+        return list.ToArray();
+    }
+
     public IEnumerator<ContuActionData> GetPossibleMoves()
     {
         ContuActionData attempt;
@@ -299,6 +308,10 @@ public class ContuGame
         return "Game " + board.GetBoardState().ToString() + " Turn " + turnCount + " " + state + Environment.NewLine + board.ToString();
     }
 
+    public string NormalAsString()
+    {
+        return ((int)state) + board.NormalAsString();
+    }
 }
 
 public enum ActionType

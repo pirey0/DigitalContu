@@ -7,9 +7,7 @@ public class AlphaBetaPruning : GameEvaluator
 {
     protected override GameEvalResult InternalEvaluate(ContuGame game, int depth)
     {
-            return AlphaBeta_Iter(game, depth);
-            return AlphaBeta_Rec(game, depth, float.NegativeInfinity, float.PositiveInfinity, game.TurnState == TurnState.Player1);
-
+        return AlphaBeta_Rec(game, depth, float.NegativeInfinity, float.PositiveInfinity, game.TurnState == TurnState.Player1);
     }
 
     //https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
@@ -19,9 +17,10 @@ public class AlphaBetaPruning : GameEvaluator
         if (depth <= 0) // || node is leaf
         {
             var res = new GameEvalResult();
-            res.Value = RunBoardEvaluator(game.Board);
+            res.Value = RunBoardEvaluator(game);
             return res;
         }
+
 
         float value = maximizingPlayer ? float.MinValue : float.MaxValue;
         GameEvalResult localRes = null;
@@ -60,7 +59,7 @@ public class AlphaBetaPruning : GameEvaluator
         if (action == null)
         {
             var res = new GameEvalResult();
-            res.Value = RunBoardEvaluator(game.Board);
+            res.Value = RunBoardEvaluator(game);
             res.Value += res.Value > 0 ? -depth * 5 : depth * 5;
             return res;
         }
@@ -95,7 +94,7 @@ public class AlphaBetaPruning : GameEvaluator
 
                     if (current.depth <= 0)
                     {
-                        returnValue = new GameEvalResult(RunBoardEvaluator(current.game.Board));
+                        returnValue = new GameEvalResult(RunBoardEvaluator(current.game));
                         address = 1; //jump to return;
                         break;
                     }
@@ -190,7 +189,7 @@ public class AlphaBetaPruning : GameEvaluator
                     if (current.action == null) 
                     {
                         Debug.Log("Out of moves");
-                        float val = RunBoardEvaluator(game.Board);
+                        float val = RunBoardEvaluator(game);
                         returnValue = new GameEvalResult(val + val > 0 ? -current.depth * 5 : current.depth * 5);
                         address = 1; //jump to return;
                     }

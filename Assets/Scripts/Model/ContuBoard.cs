@@ -281,6 +281,36 @@ public class ContuBoard
         return "E";
     }
 
+    public byte[] NormalAsBytes()
+    {
+        byte[] bytes = new byte[15];
+        for (int y = 0; y < 10; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                int piece = y * 5 + x;
+                int b = piece / 4;
+                int subB = piece % 4;
+
+
+                bytes[b] |= (byte) (((int)GetTile(x,y))<<(subB*2));
+            }
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            var t = GetToken(i);
+            bytes[13 + (i / 2)] |= (byte)(((int)t.State) << (i % 2)); 
+        }
+
+        return bytes;
+    }
+
+    public string NormalAsString()
+    {
+        return BitConverter.ToString(NormalAsBytes()).Replace("-","");
+    }
+
 }
 
 public enum BoardState

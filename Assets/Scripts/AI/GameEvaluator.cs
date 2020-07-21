@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -11,6 +12,9 @@ public abstract class GameEvaluator
     protected Stopwatch boardEvalStopWatch, cloneAndMoveStopWatch;
     protected bool measureTime;
     protected int boardsEvaluated;
+
+    protected StateHashTable stateTable;
+
     public void Setup(ContuGame game, Func<ContuBoard, float> func = null, bool measureTime = false)
     {
         this.game = game;
@@ -25,6 +29,8 @@ public abstract class GameEvaluator
             boardEvalStopWatch = new Stopwatch();
             cloneAndMoveStopWatch = new Stopwatch();
         }
+
+        stateTable = new StateHashTable();
     }
 
     public GameEvalResult Evaluate(int customDepth)
@@ -37,6 +43,7 @@ public abstract class GameEvaluator
             boardEvalStopWatch.Reset();
             cloneAndMoveStopWatch.Reset();
             boardsEvaluated = 0;
+            stateTable.ResetCount();
         }
 
         var res = InternalEvaluate(game, customDepth);
@@ -50,6 +57,7 @@ public abstract class GameEvaluator
             LogStopWatch("BoardEvals", boardEvalStopWatch, tot);
             LogStopWatch("CloneAndMoveEval", cloneAndMoveStopWatch, tot);
             UnityEngine.Debug.Log("Board Evaluation Count: " + boardsEvaluated);
+            UnityEngine.Debug.Log("Used State Table Count: " + stateTable.Count);
         }
 
         return res;
@@ -66,7 +74,7 @@ public abstract class GameEvaluator
     {
         throw new System.NotImplementedException();
     }
-    public float RunBoardEvaluator(ContuBoard board)
+    public float RunBoardEvaluator(ContuGame locGame)
     {
         if (measureTime)
         {
@@ -74,7 +82,18 @@ public abstract class GameEvaluator
             boardsEvaluated++;
         }
 
-        float res = boardEvaluator.Invoke(board);
+        float res = 0;
+        var tabRes = stateTable.Get(locGame);
+
+        if (tabRes.HasValue)
+        {
+            res = tabRes.Value;
+        }
+        else
+        {
+            res = boardEvaluator.Invoke(locGame.Board);
+            stateTable.TryAdd(locGame, 0, res);
+        }
 
         if (measureTime)
             boardEvalStopWatch.Stop();
@@ -130,4 +149,76 @@ public class GameEvalResult
 
         return sb.ToString();
     }
+}
+
+public class StateTableData
+{
+    public int Depth;
+    public float Eval;
+
+    public StateTableData(int depth, float eval)
+    {
+        Depth = depth;
+        Eval = eval;
+    }
+}
+
+public class StateHashTable
+{
+    private Hashtable table;
+    int useCount;
+
+    public int Count { get => useCount; }
+
+    public StateHashTable()
+    {
+        table = new Hashtable();
+        useCount = 0;
+    }
+
+    public void ResetCount()
+    {
+        useCount = 0;
+    }
+
+    public float? Get(ContuGame game, int minDepth =0)
+    {
+        string str = game.NormalAsString();
+
+        if (table.ContainsKey(str))
+        {
+            var res = (StateTableData) table[str];
+
+            if (res.Depth >= minDepth)
+            {
+                useCount++;
+                return res.Eval;
+            }
+
+            return null;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void TryAdd(ContuGame game, int depth, float eval)
+    {
+        string str = game.NormalAsString();
+
+        if (table.ContainsKey(str))
+        {
+            var res = (StateTableData)table[str];
+
+            if (res.Depth < depth)
+                table[str] = new StateTableData(depth, eval);
+        }
+        else
+        {
+            table.Add(str, new StateTableData(depth, eval));
+        }
+
+    }
+
 }
