@@ -32,7 +32,7 @@ public abstract class GameEvaluator
             cloneAndMoveStopWatch = new Stopwatch();
         }
 
-        stateTable = new StateHashTable(load: false);
+        stateTable = new StateHashTable(load: true);
     }
 
     public GameEvalResult Evaluate(int customDepth)
@@ -198,6 +198,7 @@ public class StateTableData
 public class StateHashTable
 {
     private Dictionary<string, StateTableData>  table;
+    const int MIN_SAVED_DEPTH = 3;
     int useCount;
 
     private static string path = "Assets/Resources/stateTable.txt";
@@ -221,6 +222,7 @@ public class StateHashTable
         StreamWriter writer = new StreamWriter(path, false);
         foreach (var item in table)
         {
+            if(item.Value.Depth >= MIN_SAVED_DEPTH)
             writer.WriteLine(item.Key.ToString() + " " + item.Value.ToString());
         }
         writer.Close();
@@ -291,6 +293,9 @@ public class StateHashTable
 
     public void TryAdd(ContuGame game, int depth, GameEvalResult eval)
     {
+        if (depth < MIN_SAVED_DEPTH)
+            return;
+
         string str = game.NormalAsString();
 
         if (table.ContainsKey(str))
